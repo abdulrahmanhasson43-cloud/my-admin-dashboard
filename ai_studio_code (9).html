@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<!-- Playables SDK v1.0.0 -->
+<script>
+(function() {
+  'use strict';
+
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  function hasIOSBridge() {
+    return !!(window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] && typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try { window.webkit.messageHandlers[HANDLER_NAME].postMessage(message); } catch (e) { }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+      try {
+        var p = payload || {};
+        p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+        window[ANDROID_BRIDGE_NAME].postEvent(eventName, JSON.stringify(p));
+      } catch (e) { }
+      return;
+    }
+
+    if (isInIframe()) {
+      try { window.parent.postMessage(message, '*'); } catch (e) { }
+      return;
+    }
+  }
+
+  function onFrame() {
+    if (gameReadySent) return;
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', { frame_count: frameCount, detected_at: Date.now() });
+      return;
+    }
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', { frame_count: frameCount, detected_at: Date.now() });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', { score: score, completed: true });
+    },
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', { message: message || 'Unknown error', auto_captured: false });
+    },
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();
+</script>
+<script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>لوحة إدارة العقرب</title>
+    
+    <!-- Amiri Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* --- Dark Glassmorphism Variables --- */
+        :root {
+            --bg-color: #0f172a;
+            --white: rgba(255, 255, 255, 0.03);
+            --text-dark: #f8fafc;
+            --text-gray: #94a3b8;
+            --lime: #10b981; 
+            --ios-blue: #3b82f6;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --border-radius: 24px;
+            --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Amiri', serif;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #020617, #0f172a, #1e293b);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
+        .app-container {
+            width: 100%; max-width: 450px; height: 100%; max-height: 900px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            position: relative;
+            overflow: hidden;
+            border: var(--glass-border);
+            box-shadow: var(--card-shadow);
+        }
+        @media (min-width: 451px) { .app-container { height: 95vh; border-radius: 40px; border: 8px solid #111; } }
+
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            background: transparent;
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1; opacity: 0; pointer-events: none;
+        }
+        .screen.active { transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 2; }
+        
+        .auth-screen { justify-content: center; align-items: center; padding: 30px; text-align: center; }
+        .auth-icon { font-size: 70px; color: var(--text-dark); margin-bottom: 20px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .btn-google {
+            width: 100%; padding: 18px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dark);
+            border: var(--glass-border);
+            border-radius: 20px; font-size: 16px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            cursor: pointer; transition: 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .btn-google:active { transform: scale(0.95); }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 25px 15px; font-size: 1.2rem; font-weight: 700;
+            background: rgba(15, 23, 42, 0.4);
+            border-bottom: var(--glass-border);
+            z-index: 10;
+        }
+        .icon-btn {
+            width: 45px; height: 45px; border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05); border: var(--glass-border);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; transition: 0.2s; color: var(--text-dark);
+        }
+        
+        .content { flex: 1; padding: 20px 25px 100px; overflow-y: auto; scrollbar-width: none; }
+        
+        .card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: var(--border-radius);
+            padding: 25px; margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+        
+        .profile { text-align: center; }
+        .profile-img-box {
+            width: 100px; height: 100px; border-radius: 50% !important;
+            background: rgba(0, 0, 0, 0.4); border: var(--glass-border);
+            margin: 0 auto 15px; display: flex; justify-content: center; align-items: center;
+            font-size: 30px; color: var(--text-gray); cursor: pointer;
+            position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .profile-img-box img { width: 100%; height: 100%; object-fit: cover; display: none; position: absolute; top: 0; left: 0; border-radius: 50%; }
+        .profile h2 { font-size: 1.5rem; margin-bottom: 5px; }
+        
+        .stats-grid { display: flex; justify-content: space-around; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; margin-top: 20px; }
+        .stat-item h3 { font-size: 1.4rem; color: var(--text-dark); }
+        .stat-item p { font-size: 0.8rem; color: var(--text-gray); }
+
+        .section-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: var(--text-dark); display: flex; align-items: center; gap: 8px; }
+        .input-group { width: 100%; margin-bottom: 15px; text-align: right; }
+        .input-group label { display: block; font-size: 0.85rem; color: var(--text-gray); margin-bottom: 5px; font-weight: 600; }
+        .input-group input, .input-group textarea, .input-group select, .auth-input {
+            width: 100%; padding: 15px; border: var(--glass-border) !important;
+            border-radius: 15px; background: rgba(0, 0, 0, 0.3) !important;
+            font-size: 1rem; outline: none; transition: 0.3s;
+            color: var(--text-dark) !important;
+        }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus, .auth-input:focus {
+            border-color: var(--lime) !important; background: rgba(0, 0, 0, 0.5) !important;
+        }
+        textarea { resize: vertical; min-height: 80px; }
+
+        .social-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .social-item:last-child { border-bottom: none; }
+        .social-info { display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 1.1rem; }
+        .social-icon-box { width: 45px; height: 45px; border-radius: 14px; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; color: white; }
+        .social-status { font-size: 0.8rem; padding: 4px 10px; border-radius: 10px; background: rgba(0,0,0,0.3); color: var(--text-gray); }
+        .social-status.active { background: var(--lime); color: #fff; font-weight: bold; }
+
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s; z-index: 100; backdrop-filter: blur(8px); }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content {
+            width: 100%; border-radius: 40px 40px 0 0; padding: 30px 25px 40px;
+            transform: translateY(100%); transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-drag { width: 50px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 25px; cursor: pointer;}
+        .modal-icon { width: 70px; height: 70px; border-radius: 20px; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: white; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        
+        .btn-main {
+            width: 100%; padding: 18px; background: var(--lime); color: #fff;
+            border: none; border-radius: 18px; font-weight: bold; font-size: 1.1rem;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        .btn-main:active { transform: scale(0.95); }
+        .btn-main.saved { background: var(--success-color); }
+        .public-link-btn {
+            background: rgba(255, 255, 255, 0.05); color: var(--text-dark);
+            border: 1px dashed rgba(255, 255, 255, 0.2); width: 100%; padding: 15px;
+            border-radius: 15px; font-weight: bold; cursor: pointer; margin-bottom: 15px; direction: ltr;
+        }
+
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            padding: 12px 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            border-radius: 30px 30px 0 0; z-index: 50;
+        }
+        .nav-item { color: var(--text-gray); font-size: 1.2rem; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1; }
+        .nav-item span { font-size: 0.65rem; font-weight: bold; }
+        .nav-item.active { color: var(--lime); }
+        .nav-save {
+            width: 55px; height: 55px; background: var(--lime); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 1.4rem;
+            margin-top: -35px; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+            cursor: pointer; color: #fff; transition: 0.3s;
+            border: 4px solid var(--bg-color); z-index: 10;
+        }
+        .nav-save:active { transform: scale(0.9); }
+
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 24px; border: var(--glass-border); }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 2px; background-color: #fff; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .search-wrapper { position: relative; margin-bottom: 15px; }
+        .search-input {
+            width: 100%; padding: 14px 45px 14px 15px; border-radius: 18px;
+            border: var(--glass-border); background: rgba(0,0,0,0.3);
+            font-size: 14px; box-shadow: var(--card-shadow); transition: 0.3s; color: var(--text-dark);
+        }
+        .search-input:focus { border-color: var(--lime); background: rgba(0,0,0,0.5); }
+        .search-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--text-gray); font-size: 16px; }
+
+        .booking-tabs { display: flex; background: rgba(0,0,0,0.3); border-radius: 14px; padding: 4px; margin-bottom: 15px; border: var(--glass-border); }
+        .b-tab { flex: 1; text-align: center; font-size: 0.8rem; font-weight: bold; padding: 10px 5px; cursor: pointer; border-radius: 10px; transition: 0.3s; color: var(--text-gray); }
+        .b-tab.active { background: rgba(255,255,255,0.1); color: var(--text-dark); box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+
+        .booking-card {
+            background: rgba(255,255,255,0.05); margin-bottom: 15px; padding: 20px;
+            border-radius: 20px; box-shadow: var(--card-shadow); display: flex;
+            justify-content: space-between; align-items: center; position: relative;
+            border: var(--glass-border);
+        }
+        .card-details b { font-size: 16px; display: block; margin-bottom: 6px; color: var(--text-dark); }
+        .card-details p { margin: 0 0 4px 0; font-size: 12px; color: var(--text-gray); }
+        .type-badge { display: inline-block; padding: 5px 12px; border-radius: 8px; font-size: 10px; font-weight: bold; margin-bottom: 8px; }
+        .vip { background: #1d1d1d; color: #ccff00; }
+        .new { background: rgba(255,255,255,0.1); color: var(--text-dark); }
+        .follow { background: rgba(16, 185, 129, 0.2); color: var(--lime); }
+        
+        .status-tag { position: absolute; top: 20px; left: 20px; font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 8px; }
+        .tag-done { background: rgba(16, 185, 129, 0.2); color: var(--success-color); }
+        .tag-canceled { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); text-decoration: line-through; }
+
+        .btn-circle { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: 0.2s; margin-bottom: 8px; }
+        .btn-circle:active { transform: scale(0.92); }
+        .wa-btn { background: #25d366; color: #fff; box-shadow: 0 4px 10px rgba(37,211,102,0.2); }
+        .check-btn { background: rgba(16, 185, 129, 0.2); color: var(--success-color); }
+        .cancel-btn { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
+
+        .holiday-tag { background: rgba(0,0,0,0.3); border: var(--glass-border); padding: 8px 14px; border-radius: 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 10px; margin: 4px; color: var(--text-dark); font-weight: bold; }
+        .holiday-tag i { color: var(--danger-color); cursor: pointer; }
+        .icon-add-btn { width: 48px; height: 48px; flex-shrink: 0; border-radius: 15px; background: rgba(255,255,255,0.1); color: var(--lime); border: var(--glass-border); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        
+        .schedule-card { background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 15px; border: var(--glass-border); margin-bottom: 10px; }
+        .schedule-header { display: flex; justify-content: space-between; align-items: center; }
+        .schedule-header .day-name { font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); }
+        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .badge-open { background: rgba(16, 185, 129, 0.2); color: var(--lime); }
+        .badge-closed { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
+        .schedule-inputs { display: none; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); }
+        .schedule-inputs .time-block, .schedule-inputs .cap-block { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+        .schedule-inputs .lbl { font-size: 10px; color: var(--text-gray); text-align: center; }
+        .schedule-inputs input { padding: 8px 4px; font-size: 12px; border-radius: 8px; text-align: center; border: var(--glass-border); background: rgba(0,0,0,0.3); width: 100%; color: var(--text-dark); }
+
+        #printArea { padding: 20px; background: rgba(0,0,0,0.3); border-radius: 20px; margin-top: 15px; display: none; border: var(--glass-border); }
+        .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .print-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; text-align: center; border: var(--glass-border); }
+        .print-item.full { grid-column: span 2; background: rgba(0,0,0,0.5); border: none; }
+        .print-item.full b { color: var(--lime); }
+        .print-item span { display: block; font-size: 11px; margin-bottom: 5px; color: var(--text-gray); }
+        .print-item b { font-size: 18px; }
+
+        .pdf-export-btn { display: none; width: 100%; padding: 15px; background: rgba(255,255,255,0.1); color: var(--lime); border: var(--glass-border); border-radius: 15px; font-size: 14px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .hidden-links-data { display: none; }
+
+        /* Custom Phone Wrapper */
+        .phone-wrapper { display: flex; gap: 8px; align-items: center; }
+        .custom-select {
+            position: relative; width: 95px; flex-shrink: 0; cursor: pointer;
+            background: rgba(0,0,0,0.3); border: var(--glass-border); border-radius: 15px;
+            color: var(--text-dark); height: 48px; display: flex; align-items: center; justify-content: center;
+        }
+        .select-selected { padding: 0 10px; font-size: 0.95rem; width: 100%; text-align: center; }
+        .select-items {
+            position: absolute; top: calc(100% + 5px); right: 0;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            border: var(--glass-border); border-radius: 12px; min-width: 180px; max-height: 200px;
+            overflow-y: auto; z-index: 99; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .select-items div { padding: 12px 15px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.2s; }
+        .select-items div:hover { background: rgba(255,255,255,0.1); color: var(--lime); }
+        .select-hide { display: none; }
+        .phone-input { flex: 1; min-width: 0; height: 48px; }
+
+        .wallet-type-selector { display: flex; gap: 5px; margin-bottom: 10px; }
+        .wallet-type-btn { flex: 1; padding: 10px; border: var(--glass-border); border-radius: 12px; background: rgba(0,0,0,0.2); font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; text-align: center; color: var(--text-gray); }
+        .wallet-type-btn.active { background: var(--lime); color: #fff; border-color: var(--lime); }
+
+        .permission-check { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; color: var(--text-dark); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- Login Screen -->
+    <div id="loginSection" class="screen auth-screen active">
+        <i class="fa-solid fa-fingerprint auth-icon"></i>
+        <h2 style="margin-bottom: 10px;">لوحة إدارة العقرب</h2>
+        <p style="margin-bottom: 40px; color: var(--text-gray);">النسخة الحديثة والمركزية لإدارة منصتك</p>
+        
+        <div style="width: 100%; max-width: 320px; margin: 0 auto;">
+            <button class="btn-google" onclick="loginWithGoogle()" style="margin-bottom: 20px;">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24" alt="Google">
+                دخول باستخدام جوجل
+            </button>
+            
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 30px 0 20px; position: relative;">
+                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--bg-color); padding: 0 10px; font-size: 0.8rem; color: var(--text-gray); border-radius: 10px;">أو</span>
+            </div>
+            
+            <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 20px; border: var(--glass-border);">
+                <label style="color: var(--text-dark); font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; display: block; text-align: center;"><i class="fa-solid fa-user-shield"></i> دخول المساعدين</label>
+                <input type="email" id="assistantLoginEmail" placeholder="البريد الإلكتروني" class="auth-input" style="margin-bottom: 12px; height: 48px;">
+                <input type="password" id="assistantLoginPassword" placeholder="كلمة المرور أو الكود السري" class="auth-input" style="margin-bottom: 20px; height: 48px;">
+                <button class="btn-main" onclick="assistantLogin()" style="font-size: 1rem; padding: 14px;">تسجيل الدخول</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Setup Screen -->
+    <div id="setupSection" class="screen auth-screen">
+        <i class="fa-solid fa-wand-magic-sparkles auth-icon" style="color: var(--lime);"></i>
+        <h2 style="margin-bottom: 10px;">إنشاء رابطك المخصص</h2>
+        <p style="margin-bottom: 30px; color: var(--text-gray);">اختر رابطاً مميزاً لعملائك (مثال: ali10)</p>
+        <div class="input-group">
+            <input type="text" id="newUserId" placeholder="اكتب اسم الرابط هنا" dir="ltr" style="text-align: center; font-size: 1.5rem; font-weight: bold; height: 60px;">
+        </div>
+        <button class="btn-main" onclick="setupAccount()">تأكيد وبدء الاستخدام</button>
+    </div>
+
+    <!-- Home Screen -->
+    <div id="homeScreen" class="screen">
+        <div class="header">
+            <span>الرئيسية</span>
+            <button class="icon-btn" onclick="logout()" style="color: var(--danger-color);"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+        <div class="content">
+            <button class="public-link-btn" onclick="copyMyLink()">
+                <i class="fa-solid fa-copy"></i> <span id="userPublicLink">alaqrab.com/?id=...</span>
+            </button>
+
+            <div class="card profile">
+                <div class="profile-img-box" onclick="document.getElementById('fInp').click()">
+                    <i id="upIcon" class="fa-solid fa-camera"></i>
+                    <img id="previewImg" alt="Profile">
+                </div>
+                <input type="file" id="fInp" hidden accept="image/*" onchange="showPreview(this)">
+                <h2 id="homeName">اسم المستخدم</h2>
+                <p id="homeTitle" style="color: var(--text-gray); font-size: 0.9rem;">المسمى الوظيفي</p>
+                
+                <div class="stats-grid">
+                    <div class="stat-item"><h3 id="statCust">0</h3><p>العملاء</p></div>
+                    <div class="stat-item"><h3 id="statRating">-</h3><p>التقييم</p></div>
+                    <div class="stat-item"><h3 id="statYear">2026</h3><p>التأسيس</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile & Settings Screen -->
+    <div id="profileScreen" class="screen">
+        <div class="header">
+            <span>الإعدادات والبيانات</span>
+        </div>
+        <div class="content">
+            <!-- Personal Data -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-address-card"></i> البيانات الشخصية</div>
+                <div class="input-group"><label>الاسم بالكامل</label><input type="text" id="adminName" placeholder="الاسم الذي يظهر للناس"></div>
+                <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="adminTitle" placeholder="مثال: مصمم جرافيك"></div>
+                <div class="input-group"><label>نبذة عنك</label><textarea id="adminAbout" placeholder="اكتب نبذة مختصرة..."></textarea></div>
+            </div>
+
+            <!-- Contact Numbers -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-phone"></i> أرقام التواصل</div>
+                <div class="input-group">
+                    <label>رقم الهاتف الأساسي</label>
+                    <div class="phone-wrapper">
+                        <div class="custom-select" id="phone1CountryCodeWrapper">
+                            <div class="select-selected" id="phone1Selected">+20</div>
+                            <div class="select-items select-hide" id="phone1Items"></div>
+                        </div>
+                        <input type="tel" id="phone1" dir="ltr" placeholder="01xxxxxxxxx" class="phone-input">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>رقم هاتف إضافي</label>
+                    <div class="phone-wrapper">
+                        <div class="custom-select" id="phone2CountryCodeWrapper">
+                            <div class="select-selected" id="phone2Selected">+20</div>
+                            <div class="select-items select-hide" id="phone2Items"></div>
+                        </div>
+                        <input type="tel" id="phone2" dir="ltr" placeholder="اختياري" class="phone-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Inputs -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-chart-simple"></i> تحديث الإحصائيات</div>
+                <div style="display:flex; gap:10px;">
+                    <div class="input-group"><label>عدد العملاء</label><input type="text" id="custCount" placeholder="مثال: 500K"></div>
+                    <div class="input-group"><label>التقييم</label><input type="text" id="rating" dir="ltr" placeholder="4.9"></div>
+                    <div class="input-group"><label>سنة التأسيس</label><input type="number" id="foundYear"></div>
+                </div>
+            </div>
+
+            <!-- Wallets -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-wallet"></i> المحافظ الإلكترونية</div>
+                <div style="margin-bottom:20px;">
+                    <label style="font-weight:bold; margin-bottom:8px; display:block;">InstaPay</label>
+                    <div class="wallet-type-selector">
+                        <div class="wallet-type-btn active" onclick="switchWalletType('instapay', 'phone')">رقم هاتف</div>
+                        <div class="wallet-type-btn" onclick="switchWalletType('instapay', 'link')">رابط</div>
+                    </div>
+                    <div id="instapay-phone" class="phone-wrapper">
+                        <div class="custom-select" id="instapayCountryCodeWrapper">
+                            <div class="select-selected" id="instapaySelected">+20</div>
+                            <div class="select-items select-hide" id="instapayItems"></div>
+                        </div>
+                        <input type="tel" id="instapayPhone" dir="ltr" placeholder="رقم InstaPay" class="phone-input">
+                    </div>
+                    <div id="instapay-link" style="display:none;">
+                        <input type="text" id="instapayLinkInput" placeholder="رابط InstaPay" dir="ltr" style="width:100%; padding:15px; border-radius:12px; border:var(--glass-border); background:rgba(0,0,0,0.3); color:#fff;">
+                    </div>
+                </div>
+                <div>
+                    <label style="font-weight:bold; margin-bottom:8px; display:block;">محفظة أخرى (رقم هاتف فقط)</label>
+                    <div class="phone-wrapper">
+                        <div class="custom-select" id="otherWalletCountryCodeWrapper">
+                            <div class="select-selected" id="otherWalletSelected">+20</div>
+                            <div class="select-items select-hide" id="otherWalletItems"></div>
+                        </div>
+                        <input type="tel" id="otherWalletPhone" dir="ltr" placeholder="رقم المحفظة الأخرى" class="phone-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assistants -->
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-user-plus"></i> المساعدين</div>
+                <p style="font-size:0.8rem; margin-bottom:10px; color:var(--text-gray);">أضف مساعدين (يقرأون بيانات جدولك) بصلاحيات محددة.</p>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <input type="email" id="assistantEmail" placeholder="البريد الإلكتروني للمساعد" style="flex:1; padding:12px; border-radius:12px; border:var(--glass-border); background:rgba(0,0,0,0.3); color:#fff;">
+                    <button type="button" class="icon-add-btn" onclick="openAssistantPermissions()"><i class="fa-solid fa-cog"></i></button>
+                </div>
+                <div id="assistantsList" style="display:flex; flex-direction:column; gap:5px;"></div>
+                
+                <div style="margin-top:20px; border-top:1px dashed rgba(255,255,255,0.1); padding-top:15px;">
+                    <label style="display:flex; align-items:center; gap:10px; margin-bottom:15px; cursor:pointer;">
+                        <input type="checkbox" id="enableAssistantCode" style="width:18px; height:18px; accent-color:var(--lime);">
+                        <span style="font-weight:bold;">تفعيل الكود السري للمساعدين</span>
+                    </label>
+                    <div class="input-group">
+                        <label>إدخال كود المساعد (يدوي)</label>
+                        <input type="text" id="manualAssistantCode" placeholder="أدخل الكود السري الخاص بالمساعدين">
+                    </div>
+                    <div class="input-group">
+                        <label>مدة صلاحية الكود</label>
+                        <select id="codeValidityMonths">
+                            <option value="6">6 أشهر</option>
+                            <option value="12">12 شهر (سنة)</option>
+                        </select>
+                    </div>
+                    <div id="currentCodeDisplay" style="margin-top:10px; background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; display:none; border:var(--glass-border);">
+                        <span>الكود الحالي: <b id="assistantCodeValue" style="color:var(--lime); margin:0 5px; font-size:1.1rem;"></b> <br> (صالح حتى <span id="codeExpiryDate" dir="ltr" style="font-size:0.9rem; color:var(--text-gray);"></span>)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Screen -->
+    <div id="bookingsScreen" class="screen">
+        <div class="header">
+            <span>إدارة الحجوزات</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:0.75rem; color:var(--text-gray); font-weight:bold;">التفعيل</span>
+                <label class="switch">
+                    <input type="checkbox" id="isBookingActiveToggle" onchange="toggleBookingRealtime()">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="content" style="padding-top:0;">
+            <div class="booking-tabs">
+                <div class="b-tab active" onclick="switchBTab('active', this)">الانتظار</div>
+                <div class="b-tab" onclick="switchBTab('done', this)">الأرشيف</div>
+                <div class="b-tab" onclick="switchBTab('settings', this)">الضبط</div>
+                <div class="b-tab" onclick="switchBTab('report', this)">التقارير</div>
+            </div>
+
+            <div id="b_activeView">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-search search-icon"></i>
+                    <input type="tel" id="searchInput" class="search-input" placeholder="ابحث برقم الهاتف..." oninput="filterBookings()">
+                </div>
+                <div class="stats-grid" style="border:none; margin-top:0; padding-top:0; margin-bottom:15px;">
+                    <div class="stat-item"><h3 id="activeC">0</h3><p>انتظار</p></div>
+                    <div class="stat-item"><h3 id="doneC" style="color:var(--success-color);">0</h3><p>منتهي</p></div>
+                    <div class="stat-item"><h3 id="cancelC" style="color:var(--danger-color);">0</h3><p>ملغي</p></div>
+                </div>
+                <div id="activeList"></div>
+            </div>
+
+            <div id="b_doneView" style="display:none;"><div id="doneList"></div></div>
+
+            <div id="b_settingsView" style="display:none;">
+                <div class="card">
+                    <div class="section-title"><i class="fa-solid fa-code-branch"></i> الفروع وقاعات العمل</div>
+                    <label style="display:flex; align-items:center; gap:10px; margin-bottom:15px; font-weight:bold; font-size:13px; cursor:pointer;">
+                        <input type="checkbox" id="enableBranches" style="width:16px; height:16px; accent-color:var(--lime);">
+                        تفعيل ميزة اختيار الفرع
+                    </label>
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="newBranchName" placeholder="اسم الفرع" style="flex:1; padding:12px; border-radius:12px; border:var(--glass-border); background:rgba(0,0,0,0.3); color:#fff;">
+                        <button type="button" class="icon-add-btn" onclick="addBranch()"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="branchesList" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title"><i class="fa-solid fa-money-bill-wave"></i> أسعار الكشوفات</div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="input-group"><label>جديد</label><input type="number" id="pNew" placeholder="0" style="text-align:center;"></div>
+                        <div class="input-group"><label>إعادة</label><input type="number" id="pFollow" placeholder="0" style="text-align:center;"></div>
+                        <div class="input-group"><label>VIP</label><input type="number" id="pVIP" placeholder="0" style="text-align:center;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title"><i class="fa-regular fa-calendar-check"></i> جدول المواعيد</div>
+                    <div id="advancedSchedulesContainer"></div>
+                </div>
+                
+                <div class="card" style="margin-bottom: 50px;">
+                    <div class="section-title"><i class="fa-solid fa-calendar-day"></i> الإجازات الاستثنائية</div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="date" id="holidayDate" style="flex:1; padding:12px; border-radius:12px; border:var(--glass-border); background:rgba(0,0,0,0.3); color:#fff; color-scheme: dark;">
+                        <button type="button" class="icon-add-btn" onclick="addHoliday()"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div id="holidaysList" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+                </div>
+            </div>
+
+            <div id="b_reportView" style="display:none;">
+                <div class="card">
+                    <h3 style="margin-bottom:15px; color:var(--text-dark);"><i class="fa-solid fa-file-invoice"></i> استخراج جرد الحجوزات</h3>
+                    <div style="display:flex; gap:10px; margin-bottom: 15px;">
+                        <div class="input-group"><label>من تاريخ</label><input type="date" id="reportFrom" style="color-scheme: dark;"></div>
+                        <div class="input-group"><label>إلى تاريخ</label><input type="date" id="reportTo" style="color-scheme: dark;"></div>
+                    </div>
+                    <button class="btn-main" onclick="generateReport()" style="width:100%; border-radius:15px; padding:15px; font-weight:bold;">إصدار التقرير</button>
+                    <div id="printArea"></div>
+                    <button class="pdf-export-btn" id="pdfBtn" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> تحميل PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Screen -->
+    <div id="linksScreen" class="screen">
+        <div class="header"><span>إدارة الروابط</span></div>
+        <div class="content">
+            <div class="card">
+                <p style="font-size:0.85rem; color:var(--text-gray); margin-bottom:20px;">اضغط على أي منصة لإضافة أو تعديل الرابط.</p>
+                <div id="socialList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" id="mainNav" style="display: none;">
+        <div class="nav-item active" onclick="switchTab('homeScreen', this)"><i class="fa-solid fa-house"></i><span>الرئيسية</span></div>
+        <div class="nav-item" onclick="switchTab('profileScreen', this)"><i class="fa-solid fa-user-gear"></i><span>الإعدادات</span></div>
+        <div class="nav-save" onclick="saveAdminData()" id="saveBtnBtn"><i class="fa-solid fa-check"></i></div>
+        <div class="nav-item" onclick="switchTab('bookingsScreen', this)"><i class="fa-solid fa-calendar-check"></i><span>الحجوزات</span></div>
+        <div class="nav-item" onclick="switchTab('linksScreen', this)"><i class="fa-solid fa-link"></i><span>الروابط</span></div>
+    </div>
+
+    <!-- Modals -->
+    <div id="linkModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-drag" onclick="closeModal()"></div>
+            <div class="modal-icon" id="modalIcon"></div>
+            <h2 id="modalTitle" style="margin-bottom: 20px;"></h2>
+            <div class="input-group"><label>الرابط</label><input type="url" id="modalInput" dir="ltr"></div>
+            <button class="btn-main" id="modalSaveBtn" onclick="saveModalLink()">حفظ الرابط</button>
+        </div>
+    </div>
+
+    <div id="assistantPermissionsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-drag" onclick="closeAssistantPermissions()"></div>
+            <h3 style="margin-bottom:20px;"><i class="fa-solid fa-user-shield"></i> صلاحيات المساعد</h3>
+            <div style="width:100%; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; border: var(--glass-border);">
+                <div class="permission-check"><input type="checkbox" id="permViewBookings" checked disabled style="accent-color: var(--lime);"> عرض الحجوزات</div>
+                <div class="permission-check"><input type="checkbox" id="permChangeStatus" style="accent-color: var(--lime);"> تغيير حالة الحجز (تم/إلغاء)</div>
+                <div class="permission-check"><input type="checkbox" id="permViewReports" style="accent-color: var(--lime);"> عرض التقارير</div>
+                <div class="permission-check"><input type="checkbox" id="permEditSettings" style="accent-color: var(--lime);"> تعديل إعدادات الحجوزات</div>
+            </div>
+            <button class="btn-main" onclick="addAssistantWithPermissions()" style="margin-top:20px;">إضافة المساعد</button>
+        </div>
+    </div>
+
+    <!-- Hidden Inputs for Links -->
+    <div class="hidden-links-data">
+        <input type="hidden" id="linkWa"><input type="hidden" id="linkFb"><input type="hidden" id="linkInsta">
+        <input type="hidden" id="linkTiktok"><input type="hidden" id="linkYt"><input type="hidden" id="linkTh">
+        <input type="hidden" id="linkTg"><input type="hidden" id="linkSn"><input type="hidden" id="linkXt">
+        <input type="hidden" id="linkLinkedin"><input type="hidden" id="linkMap"><input type="hidden" id="linkReviews">
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, query, orderBy, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxxWhIBlC92x_T4lBjDj7p7B3hrvhVZYg",
+      authDomain: "alaqrab-system.firebaseapp.com",
+      projectId: "alaqrab-system",
+      storageBucket: "alaqrab-system.firebasestorage.app",
+      messagingSenderId: "660494503813",
+      appId: "1:660494503813:web:3f45fc069b3506f8657eec"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null;
+    let userDocId = null;
+    let isAssistantMode = false;
+    let assistantPermissions = {};
+    let currentModalSocialId = null;
+
+    // Fixed FontAwesome icons for Google Maps and Google Reviews
+    const socialPlatforms =[
+        { id: 'linkWa', name: 'WhatsApp', icon: 'fa-whatsapp', color: '#25D366' },
+        { id: 'linkFb', name: 'Facebook', icon: 'fa-facebook-f', color: '#1877F2' },
+        { id: 'linkInsta', name: 'Instagram', icon: 'fa-instagram', color: '#E4405F' },
+        { id: 'linkTiktok', name: 'TikTok', icon: 'fa-tiktok', color: '#cbd5e1', iconColor: '#000' },
+        { id: 'linkYt', name: 'YouTube', icon: 'fa-youtube', color: '#FF0000' },
+        { id: 'linkTh', name: 'Threads', icon: 'fa-threads', color: '#f8fafc', iconColor: '#000' },
+        { id: 'linkTg', name: 'Telegram', icon: 'fa-telegram', color: '#0088cc' },
+        { id: 'linkSn', name: 'Snapchat', icon: 'fa-snapchat', color: '#FFFC00', iconColor: '#000' },
+        { id: 'linkXt', name: 'X (Twitter)', icon: 'fa-x-twitter', color: '#f8fafc', iconColor: '#000' },
+        { id: 'linkLinkedin', name: 'LinkedIn', icon: 'fa-linkedin-in', color: '#0077B5' },
+        { id: 'linkMap', name: 'Google Maps', icon: 'fa-map-location-dot', color: '#EA4335', isSolid: true },
+        { id: 'linkReviews', name: 'Google Reviews', icon: 'fa-star', color: '#FBBC05', isSolid: true }
+    ];
+
+    const countryCodes =[
+        { code: "+20", name: "مصر", len: 10 },
+        { code: "+966", name: "السعودية", len: 9 },
+        { code: "+971", name: "الإمارات", len: 9 },
+        { code: "+965", name: "الكويت", len: 8 },
+        { code: "+974", name: "قطر", len: 8 },
+        { code: "+973", name: "البحرين", len: 8 },
+        { code: "+968", name: "عمان", len: 8 },
+        { code: "+962", name: "الأردن", len: 9 },
+        { code: "+961", name: "لبنان", len: 8 },
+        { code: "+963", name: "سوريا", len: 9 },
+        { code: "+964", name: "العراق", len: 10 },
+        { code: "+967", name: "اليمن", len: 9 },
+        { code: "+970", name: "فلسطين", len: 9 },
+        { code: "+216", name: "تونس", len: 8 },
+        { code: "+213", name: "الجزائر", len: 9 },
+        { code: "+212", name: "المغرب", len: 9 },
+        { code: "+218", name: "ليبيا", len: 9 },
+        { code: "+249", name: "السودان", len: 9 },
+        { code: "+252", name: "الصومال", len: 8 }
+    ];
+
+    // Build Custom Country Selectors
+    function setupCustomSelect(wrapperId) {
+        const wrapper = document.getElementById(wrapperId);
+        if(!wrapper) return;
+        const selected = wrapper.querySelector('.select-selected');
+        const itemsContainer = wrapper.querySelector('.select-items');
+        
+        countryCodes.forEach(c => {
+            const item = document.createElement('div');
+            item.innerText = `${c.name} (${c.code})`;
+            item.dataset.val = c.code;
+            item.dataset.len = c.len;
+            item.addEventListener('click', function(e) {
+                selected.innerText = this.dataset.val;
+                selected.dataset.len = this.dataset.len;
+                itemsContainer.classList.add('select-hide');
+                const input = wrapper.nextElementSibling;
+                if(input && input.classList.contains('phone-input')) {
+                    input.maxLength = this.dataset.len;
+                    input.value = input.value.slice(0, this.dataset.len);
+                    validatePhoneInput(input);
+                }
+            });
+            itemsContainer.appendChild(item);
+        });
+
+        selected.addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.querySelectorAll('.select-items').forEach(el => {
+                if(el !== itemsContainer) el.classList.add('select-hide');
+            });
+            itemsContainer.classList.toggle('select-hide');
+        });
+    }
+
+    function populateCountryCodes() {['phone1CountryCodeWrapper', 'phone2CountryCodeWrapper', 'instapayCountryCodeWrapper', 'otherWalletCountryCodeWrapper'].forEach(id => {
+            setupCustomSelect(id);
+        });
+    }
+
+    function setCustomSelectValue(wrapperId, code) {
+        const wrapper = document.getElementById(wrapperId);
+        if(!wrapper) return;
+        const selected = wrapper.querySelector('.select-selected');
+        const c = countryCodes.find(x => x.code === code) || countryCodes[0];
+        selected.innerText = c.code;
+        selected.dataset.len = c.len;
+        const input = wrapper.nextElementSibling;
+        if(input && input.classList.contains('phone-input')) {
+            input.maxLength = c.len;
+            validatePhoneInput(input);
+        }
+    }
+
+    function getCustomSelectValue(wrapperId) {
+        return document.querySelector(`#${wrapperId} .select-selected`).innerText;
+    }
+
+    function validatePhoneInput(input) {
+        const wrapper = input.previousElementSibling;
+        let maxLen = 10;
+        if(wrapper && wrapper.classList.contains('custom-select')) {
+            const selected = wrapper.querySelector('.select-selected');
+            if(selected && selected.dataset.len) maxLen = parseInt(selected.dataset.len);
+        }
+        if(input.value.length > maxLen) {
+            input.value = input.value.slice(0, maxLen);
+        }
+        if(input.value.length > 0 && input.value.length < maxLen) {
+            input.style.borderColor = 'var(--danger-color)';
+        } else if (input.value.length === maxLen) {
+            input.style.borderColor = 'var(--success-color)';
+        } else {
+            input.style.borderColor = 'rgba(255,255,255,0.1)';
+        }
+    }
+
+    document.addEventListener('click', function() {
+        document.querySelectorAll('.select-items').forEach(el => el.classList.add('select-hide'));
+    });
+
+    document.querySelectorAll('.phone-input').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/\D/g, '');
+            validatePhoneInput(this);
+        });
+    });
+
+    window.switchWalletType = (wallet, type) => {
+        const btns = document.querySelectorAll('.wallet-type-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        if(type === 'phone') {
+            document.getElementById(`${wallet}-phone`).style.display = 'flex';
+            document.getElementById(`${wallet}-link`).style.display = 'none';
+        } else {
+            document.getElementById(`${wallet}-phone`).style.display = 'none';
+            document.getElementById(`${wallet}-link`).style.display = 'block';
+        }
+    };
+
+    function renderSocialList() {
+        const listDiv = document.getElementById('socialList');
+        if (!listDiv) return;
+        listDiv.innerHTML = '';
+        socialPlatforms.forEach(p => {
+            const val = document.getElementById(p.id).value;
+            const hasLink = val && val.trim() !== '';
+            const iconClass = p.isSolid ? 'fa-solid' : 'fa-brands';
+            listDiv.innerHTML += `
+                <div class="social-item" onclick="openModal('${p.id}', '${p.name}', '${iconClass} ${p.icon}', '${p.color}', '${p.iconColor || '#fff'}')">
+                    <div class="social-info">
+                        <div class="social-icon-box" style="background: ${p.color}; color: ${p.iconColor || '#fff'}">
+                            <i class="${iconClass} ${p.icon}"></i>
+                        </div>
+                        <span>${p.name}</span>
+                    </div>
+                    <div class="social-status ${hasLink ? 'active' : ''}">${hasLink ? 'متصل' : 'إضافة'}</div>
+                </div>
+            `;
+        });
+    }
+
+    window.openModal = function(id, name, iconClass, bgColor, iconColor) {
+        currentModalSocialId = id;
+        document.getElementById('modalTitle').innerText = name;
+        const iconDiv = document.getElementById('modalIcon');
+        iconDiv.style.background = bgColor;
+        iconDiv.style.color = iconColor;
+        iconDiv.innerHTML = `<i class="${iconClass}"></i>`;
+        document.getElementById('modalInput').value = document.getElementById(id).value;
+        const btn = document.getElementById('modalSaveBtn');
+        btn.classList.remove('saved');
+        btn.innerHTML = 'حفظ الرابط';
+        document.getElementById('linkModal').classList.add('active');
+    };
+
+    window.closeModal = () => document.getElementById('linkModal').classList.remove('active');
+    
+    window.saveModalLink = function() {
+        document.getElementById(currentModalSocialId).value = document.getElementById('modalInput').value;
+        const btn = document.getElementById('modalSaveBtn');
+        btn.classList.add('saved'); 
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> تم الحفظ';
+        renderSocialList(); 
+        setTimeout(() => closeModal(), 1000);
+    };
+
+    window.switchTab = (screenId, el) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        if (el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+        if (screenId === 'linksScreen') renderSocialList();
+    };
+
+    window.switchBTab = (tab, el) => {
+        document.querySelectorAll('.b-tab').forEach(i => i.classList.remove('active'));
+        el.classList.add('active');
+        ['active', 'done', 'settings', 'report'].forEach(t => {
+            const view = document.getElementById(`b_${t}View`);
+            if(view) view.style.display = (t === tab) ? 'block' : 'none';
+        });
+    };
+
+    window.currentBranches = [];
+    window.currentHolidays = [];
+    window.allBookings =[];
+    const daysMap =[
+        { id: 6, name: "السبت" }, { id: 0, name: "الأحد" }, { id: 1, name: "الاثنين" },
+        { id: 2, name: "الثلاثاء" }, { id: 3, name: "الأربعاء" }, { id: 4, name: "الخميس" }, { id: 5, name: "الجمعة" }
+    ];
+
+    function buildScheduleUI() {
+        const container = document.getElementById('advancedSchedulesContainer');
+        container.innerHTML = '';
+        daysMap.forEach(day => {
+            container.innerHTML += `
+                <div class="schedule-card">
+                    <div class="schedule-header">
+                        <label class="day-name"><input type="checkbox" id="dayOn_${day.id}" style="accent-color:var(--lime);" onchange="toggleDayInputs(${day.id})"> ${day.name}</label>
+                        <span class="status-badge badge-closed" id="statusBadge_${day.id}">مغلق</span>
+                    </div>
+                    <div class="schedule-inputs" id="dayInputs_${day.id}">
+                        <div class="time-block"><span class="lbl">من</span><input type="time" id="dayFrom_${day.id}"></div>
+                        <div class="time-block"><span class="lbl">إلى</span><input type="time" id="dayTo_${day.id}"></div>
+                        <div class="cap-block"><span class="lbl">العدد</span><input type="number" id="dayCap_${day.id}" placeholder="5"></div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    window.toggleDayInputs = (id) => {
+        const isChecked = document.getElementById(`dayOn_${id}`).checked;
+        const inputsDiv = document.getElementById(`dayInputs_${id}`);
+        const badge = document.getElementById(`statusBadge_${id}`);
+        inputsDiv.style.display = isChecked ? 'flex' : 'none';
+        badge.innerText = isChecked ? 'عمل' : 'مغلق';
+        badge.className = `status-badge ${isChecked ? 'badge-open' : 'badge-closed'}`;
+    };
+
+    window.addBranch = () => {
+        const name = document.getElementById('newBranchName').value.trim();
+        if (name) { window.currentBranches.push({ name }); renderBranches(); document.getElementById('newBranchName').value = ''; }
+    };
+    window.removeBranch = (idx) => { window.currentBranches.splice(idx, 1); renderBranches(); };
+    function renderBranches() {
+        const list = document.getElementById('branchesList');
+        list.innerHTML = '';
+        window.currentBranches.forEach((b, i) => {
+            list.innerHTML += `<div class="holiday-tag">${b.name} <i class="fa-solid fa-circle-xmark" onclick="removeBranch(${i})"></i></div>`;
+        });
+    }
+
+    window.addHoliday = () => {
+        const d = document.getElementById('holidayDate').value;
+        if (d && !window.currentHolidays.includes(d)) { window.currentHolidays.push(d); renderHolidays(); }
+    };
+    window.removeHoliday = (d) => { window.currentHolidays = window.currentHolidays.filter(x => x !== d); renderHolidays(); };
+    function renderHolidays() {
+        const list = document.getElementById('holidaysList');
+        list.innerHTML = '';
+        window.currentHolidays.forEach(d => {
+            list.innerHTML += `<div class="holiday-tag">${d} <i class="fa-solid fa-circle-xmark" onclick="removeHoliday('${d}')"></i></div>`;
+        });
+    }
+
+    window.toggleBookingRealtime = async () => {
+        if (!userDocId || isAssistantMode) return;
+        const isActive = document.getElementById('isBookingActiveToggle').checked;
+        try {
+            await updateDoc(doc(db, "users", userDocId), { isBookingActive: isActive });
+        } catch(e) { }
+    };
+
+    window.filterBookings = () => {
+        const queryText = document.getElementById('searchInput').value.trim();
+        const activeC = document.getElementById('activeList');
+        const doneC = document.getElementById('doneList');
+        activeC.innerHTML = ''; doneC.innerHTML = '';
+        let stats = { act: 0, dn: 0, can: 0 };
+
+        window.allBookings.forEach(b => {
+            if (queryText && b.userPhone && !b.userPhone.includes(queryText)) return;
+            
+            let typeClass = 'new', typeText = b.type || 'كشف جديد';
+            if (b.type === 'إعادة') typeClass = 'follow';
+            if (b.type === 'VIP') typeClass = 'vip';
+
+            const isDone = b.status === 'done', isCanceled = b.status === 'canceled', isActive = !isDone && !isCanceled;
+            const tagHtml = isDone ? `<span class="status-tag tag-done">مكتمل</span>` : isCanceled ? `<span class="status-tag tag-canceled">ملغي</span>` : '';
+            
+            const canChangeStatus = !isAssistantMode || assistantPermissions.changeStatus;
+            const actionsHtml = isActive && canChangeStatus ? `
+                <button class="btn-circle check-btn" onclick="updateStatus('${b.id}', 'done')"><i class="fa-solid fa-check"></i></button>
+                <button class="btn-circle cancel-btn" onclick="updateStatus('${b.id}', 'canceled')"><i class="fa-solid fa-xmark"></i></button>
+            ` : '';
+
+            const card = `
+                <div class="booking-card" style="${isCanceled ? 'opacity:0.5;' : ''}">
+                    ${tagHtml}
+                    <div class="card-details">
+                        <span class="type-badge ${typeClass}">${typeText}</span>
+                        <b>${b.userName || 'غير معروف'}</b>
+                        ${b.branchName ? `<p><i class="fa-solid fa-map-location-dot"></i> ${b.branchName}</p>` : ''}
+                        <p><i class="fa-regular fa-calendar-check"></i> ${b.date || '---'} | <i class="fa-regular fa-clock"></i> ${b.timeLabel || '---'}</p>
+                        <p style="color:var(--lime); font-weight:bold;">${b.userPhone || ''}</p>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-circle wa-btn" onclick="window.open('https://wa.me/${b.userPhone}')"><i class="fa-brands fa-whatsapp"></i></button>
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `;
+            if (isActive) { activeC.innerHTML += card; stats.act++; } 
+            else { doneC.innerHTML += card; if(isDone) stats.dn++; if(isCanceled) stats.can++; }
+        });
+
+        if (activeC.innerHTML === '') activeC.innerHTML = '<p style="text-align:center; color:var(--text-gray); padding:20px;">لا يوجد حجوزات قيد الانتظار.</p>';
+        document.getElementById('activeC').innerText = stats.act;
+        document.getElementById('doneC').innerText = stats.dn;
+        document.getElementById('cancelC').innerText = stats.can;
+    };
+
+    window.updateStatus = async (id, newStatus) => {
+        if (isAssistantMode && !assistantPermissions.changeStatus) return;
+        if (confirm(newStatus === 'done' ? "تأكيد التنفيذ؟" : "تأكيد الإلغاء؟")) {
+            await updateDoc(doc(db, "users", userDocId, "bookings", id), { status: newStatus });
+        }
+    };
+
+    window.generateReport = () => {
+        const from = document.getElementById('reportFrom').value;
+        const to = document.getElementById('reportTo').value;
+        if(!from || !to) return alert('يرجى تحديد تواريخ التقرير');
+        
+        const printArea = document.getElementById('printArea');
+        printArea.style.display = 'block';
+        printArea.innerHTML = `<h3 style="text-align:center; color:var(--lime); margin-bottom:15px;">تقرير الحجوزات</h3><p style="text-align:center; color:var(--text-gray); font-size:12px; margin-bottom:15px;">الفترة: ${from} إلى ${to}</p><div class="print-grid"></div>`;
+        const grid = printArea.querySelector('.print-grid');
+        
+        let count = 0;
+        window.allBookings.forEach(b => {
+            if(b.date >= from && b.date <= to) {
+                grid.innerHTML += `
+                    <div class="print-item full">
+                        <span>العميل: ${b.userName || 'غير معروف'}</span>
+                        <b>${b.status === 'done' ? 'منتهي' : (b.status === 'canceled' ? 'ملغي' : 'انتظار')}</b>
+                    </div>
+                `;
+                count++;
+            }
+        });
+        if(count === 0) grid.innerHTML = `<p style="grid-column: span 2; text-align:center; color:var(--text-gray);">لا توجد حجوزات في هذه الفترة.</p>`;
+        document.getElementById('pdfBtn').style.display = 'block';
+    };
+
+    window.downloadPDF = () => {
+        const element = document.getElementById('printArea');
+        html2pdf().from(element).set({ margin: 1, filename: 'report.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).save();
+    };
+
+    const previewImg = document.getElementById('previewImg'), upIcon = document.getElementById('upIcon');
+    window.showPreview = (inp) => {
+        if (inp.files && inp.files[0]) {
+            const r = new FileReader();
+            r.onload = e => { previewImg.src = e.target.result; previewImg.style.display = 'block'; upIcon.style.display = 'none'; };
+            r.readAsDataURL(inp.files[0]);
+        }
+    };
+    function getImageBase64() { return (previewImg.style.display === 'block' && previewImg.src.startsWith('data:image')) ? previewImg.src : null; }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            const mappingDoc = await getDoc(doc(db, "auth_mapping", user.uid));
+            if (mappingDoc.exists()) {
+                const data = mappingDoc.data();
+                userDocId = data.userDocId;
+                isAssistantMode = data.isAssistant || false;
+                assistantPermissions = data.permissions || {};
+            } else {
+                const q = query(collection(db, "assistants"), where("email", "==", user.email));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const assistantData = snap.docs[0].data();
+                    userDocId = assistantData.ownerId;
+                    isAssistantMode = true;
+                    assistantPermissions = assistantData.permissions || {};
+                    await setDoc(doc(db, "auth_mapping", user.uid), { userDocId, isAssistant: true, permissions: assistantPermissions });
+                } else {
+                    showAuthScreen('setupSection');
+                    return;
+                }
+            }
+            loadData();
+        } else {
+            showAuthScreen('loginSection');
+        }
+    });
+
+    window.loginWithGoogle = () => signInWithPopup(auth, provider);
+    window.assistantLogin = async () => {
+        const email = document.getElementById('assistantLoginEmail').value;
+        const pass = document.getElementById('assistantLoginPassword').value;
+        if(!email || !pass) return alert('يرجى إدخال البريد الإلكتروني وكلمة المرور');
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch(e) {
+            alert('بيانات الدخول غير صحيحة');
+        }
+    };
+    window.logout = () => signOut(auth);
+
+    function showAuthScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.getElementById('mainNav').style.display = 'none';
+    }
+
+    window.setupAccount = async () => {
+        const desiredId = document.getElementById('newUserId').value.trim().toLowerCase();
+        if (desiredId.length < 3) return alert("الرابط يجب أن يكون 3 أحرف على الأقل.");
+        const check = await getDoc(doc(db, "users", desiredId));
+        if (check.exists()) return alert("الرابط محجوز مسبقاً، اختر اسماً آخر.");
+        await setDoc(doc(db, "users", desiredId), { uid: currentUser.uid, isActive: true, isBookingActive: false, displayName: currentUser.displayName });
+        await setDoc(doc(db, "auth_mapping", currentUser.uid), { userDocId: desiredId, isAssistant: false });
+        userDocId = desiredId; isAssistantMode = false;
+        loadData();
+    };
+
+    let pendingAssistantEmail = '';
+    window.openAssistantPermissions = () => {
+        const email = document.getElementById('assistantEmail').value.trim();
+        if (!email) return alert('أدخل البريد الإلكتروني للمساعد أولاً');
+        pendingAssistantEmail = email;
+        document.getElementById('assistantPermissionsModal').classList.add('active');
+    };
+    window.closeAssistantPermissions = () => document.getElementById('assistantPermissionsModal').classList.remove('active');
+    window.addAssistantWithPermissions = async () => {
+        const perms = {
+            viewBookings: true,
+            changeStatus: document.getElementById('permChangeStatus').checked,
+            viewReports: document.getElementById('permViewReports').checked,
+            editSettings: document.getElementById('permEditSettings').checked
+        };
+        window.assistants.push({ email: pendingAssistantEmail, permissions: perms });
+        renderAssistants();
+        closeAssistantPermissions();
+        document.getElementById('assistantEmail').value = '';
+    };
+
+    window.assistants =[];
+    function renderAssistants() {
+        const list = document.getElementById('assistantsList');
+        list.innerHTML = '';
+        window.assistants.forEach((a, i) => {
+            const p =[];
+            if(a.permissions?.changeStatus) p.push('تغيير الحالة');
+            if(a.permissions?.viewReports) p.push('التقارير');
+            if(a.permissions?.editSettings) p.push('الإعدادات');
+            const txt = p.length ? ` (${p.join('، ')})` : ' (قراءة فقط)';
+            list.innerHTML += `<div class="holiday-tag" style="justify-content:space-between; width:100%;">${a.email}${txt} <i class="fa-solid fa-circle-xmark" onclick="removeAssistant(${i})"></i></div>`;
+        });
+    }
+    window.removeAssistant = (idx) => { window.assistants.splice(idx, 1); renderAssistants(); };
+
+    async function loadData() {
+        populateCountryCodes();
+        buildScheduleUI();
+        document.getElementById('userPublicLink').innerText = `${window.location.host}/?id=${userDocId}`;
+        
+        const docSnap = await getDoc(doc(db, "users", userDocId));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            
+            if (data.heroImg && data.heroImg.startsWith('data:image')) {
+                previewImg.src = data.heroImg; previewImg.style.display = 'block'; upIcon.style.display = 'none';
+            }
+            document.getElementById('homeName').innerText = data.displayName || 'بدون اسم';
+            document.getElementById('homeTitle').innerText = data.title || '';
+            document.getElementById('statCust').innerText = data.customersCount || '0';
+            document.getElementById('statRating').innerText = data.rating || '-';
+            document.getElementById('statYear').innerText = data.foundedYear || '2026';
+
+            document.getElementById('adminName').value = data.displayName || '';
+            document.getElementById('adminTitle').value = data.title || '';
+            document.getElementById('adminAbout').value = data.about || '';
+            
+            const p1 = data.phone1 ? data.phone1.split('|') : ['+20', ''];
+            setCustomSelectValue('phone1CountryCodeWrapper', p1[0]);
+            document.getElementById('phone1').value = p1[1] || '';
+            
+            const p2 = data.phone2 ? data.phone2.split('|') : ['+20', ''];
+            setCustomSelectValue('phone2CountryCodeWrapper', p2[0]);
+            document.getElementById('phone2').value = p2[1] || '';
+            
+            document.getElementById('custCount').value = data.customersCount || '';
+            document.getElementById('foundYear').value = data.foundedYear || '';
+            document.getElementById('rating').value = data.rating || '';
+            
+            if (data.instapayType === 'phone') {
+                switchWalletType('instapay', 'phone');
+                const ip = data.instapayPhone ? data.instapayPhone.split('|') : ['+20', ''];
+                setCustomSelectValue('instapayCountryCodeWrapper', ip[0]);
+                document.getElementById('instapayPhone').value = ip[1] || '';
+            } else {
+                switchWalletType('instapay', 'link');
+                document.getElementById('instapayLinkInput').value = data.instapayLink || '';
+            }
+            
+            const ow = data.otherWalletPhone ? data.otherWalletPhone.split('|') : ['+20', ''];
+            setCustomSelectValue('otherWalletCountryCodeWrapper', ow[0]);
+            document.getElementById('otherWalletPhone').value = ow[1] || '';
+            
+            socialPlatforms.forEach(p => {
+                const key = p.id.replace('link','').toLowerCase();
+                document.getElementById(p.id).value = data[key] || '';
+            });
+            
+            document.getElementById('isBookingActiveToggle').checked = data.isBookingActive || false;
+            document.getElementById('enableBranches').checked = data.enableBranches || false;
+            window.currentBranches = data.branches ||[]; renderBranches();
+            
+            document.getElementById('pNew').value = data.prices?.new || '';
+            document.getElementById('pFollow').value = data.prices?.followup || '';
+            document.getElementById('pVIP').value = data.prices?.vip || '';
+            
+            let advSched = data.advancedSchedules || {};
+            daysMap.forEach(day => {
+                const isWorking = advSched[day.id] ? !advSched[day.id].isOff : !(data.offDays ||[]).includes(day.id);
+                document.getElementById(`dayOn_${day.id}`).checked = isWorking;
+                window.toggleDayInputs(day.id);
+                document.getElementById(`dayFrom_${day.id}`).value = advSched[day.id]?.from || data.workFrom || "09:00";
+                document.getElementById(`dayTo_${day.id}`).value = advSched[day.id]?.to || data.workTo || "17:00";
+                document.getElementById(`dayCap_${day.id}`).value = advSched[day.id]?.capacity || data.capacityPerHour || 5;
+            });
+            window.currentHolidays = data.holidays ||[]; renderHolidays();
+            
+            window.assistants = data.assistants ||[]; renderAssistants();
+            document.getElementById('enableAssistantCode').checked = data.enableAssistantCode || false;
+            document.getElementById('codeValidityMonths').value = data.codeValidityMonths || '6';
+            
+            window.currentAssistantCodeData = data.assistantCode || null;
+            if (data.enableAssistantCode && currentAssistantCodeData) {
+                document.getElementById('currentCodeDisplay').style.display = 'block';
+                document.getElementById('assistantCodeValue').innerText = currentAssistantCodeData.code;
+                document.getElementById('manualAssistantCode').value = currentAssistantCodeData.code;
+                document.getElementById('codeExpiryDate').innerText = new Date(currentAssistantCodeData.expires).toLocaleDateString('ar-EG');
+            }
+        }
+
+        if (isAssistantMode) {
+            document.querySelectorAll('.nav-item').forEach(n => n.style.display = 'none');
+            const bkNav = document.querySelector('.nav-item[onclick*="bookingsScreen"]');
+            if(bkNav) bkNav.style.display = 'flex';
+            document.getElementById('saveBtnBtn').style.display = 'none';
+            if (!assistantPermissions.editSettings) {
+                const sTab = document.querySelector('.b-tab[onclick*="settings"]');
+                if(sTab) sTab.style.display = 'none';
+            }
+            if (!assistantPermissions.viewReports) {
+                const rTab = document.querySelector('.b-tab[onclick*="report"]');
+                if(rTab) rTab.style.display = 'none';
+            }
+            switchTab('bookingsScreen', bkNav);
+            document.getElementById('mainNav').style.display = 'flex';
+        } else {
+            switchTab('homeScreen', document.querySelector('.nav-item[onclick*="homeScreen"]'));
+            document.getElementById('mainNav').style.display = 'flex';
+        }
+
+        onSnapshot(query(collection(db, "users", userDocId, "bookings"), orderBy("createdAt", "desc")), snap => {
+            window.allBookings =[];
+            snap.forEach(d => { let b = d.data(); b.id = d.id; window.allBookings.push(b); });
+            window.filterBookings();
+        });
+    }
+
+    window.saveAdminData = async function() {
+        if (isAssistantMode) return;
+        const btn = document.getElementById('saveBtnBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        
+        let newAdvSched = {}, classicOffDays =[];
+        daysMap.forEach(day => {
+            const isWorking = document.getElementById(`dayOn_${day.id}`).checked;
+            if (!isWorking) classicOffDays.push(day.id);
+            newAdvSched[day.id] = {
+                isOff: !isWorking,
+                from: document.getElementById(`dayFrom_${day.id}`).value || "09:00",
+                to: document.getElementById(`dayTo_${day.id}`).value || "17:00",
+                capacity: parseInt(document.getElementById(`dayCap_${day.id}`).value) || 5
+            };
+        });
+
+        const instapayType = document.getElementById('instapay-phone').style.display === 'none' ? 'link' : 'phone';
+        const instapayData = instapayType === 'phone' 
+            ? { instapayPhone: getCustomSelectValue('instapayCountryCodeWrapper') + '|' + document.getElementById('instapayPhone').value }
+            : { instapayLink: document.getElementById('instapayLinkInput').value };
+
+        let codeData = null;
+        if (document.getElementById('enableAssistantCode').checked) {
+            const codeVal = document.getElementById('manualAssistantCode').value.trim();
+            if (!codeVal) {
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                return alert('يرجى إدخال كود المساعد يدوياً أو إلغاء تفعيل الخاصية');
+            }
+            const expires = new Date();
+            expires.setMonth(expires.getMonth() + parseInt(document.getElementById('codeValidityMonths').value || '6'));
+            codeData = { code: codeVal, expires: expires.toISOString() };
+        }
+
+        const profileData = {
+            displayName: document.getElementById('adminName').value,
+            title: document.getElementById('adminTitle').value,
+            about: document.getElementById('adminAbout').value,
+            phone1: getCustomSelectValue('phone1CountryCodeWrapper') + '|' + document.getElementById('phone1').value,
+            phone2: getCustomSelectValue('phone2CountryCodeWrapper') + '|' + document.getElementById('phone2').value,
+            customersCount: document.getElementById('custCount').value,
+            foundedYear: document.getElementById('foundYear').value,
+            rating: document.getElementById('rating').value,
+            instapayType, ...instapayData,
+            otherWalletPhone: getCustomSelectValue('otherWalletCountryCodeWrapper') + '|' + document.getElementById('otherWalletPhone').value,
+            isBookingActive: document.getElementById('isBookingActiveToggle').checked,
+            enableBranches: document.getElementById('enableBranches').checked,
+            branches: window.currentBranches,
+            advancedSchedules: newAdvSched,
+            offDays: classicOffDays,
+            holidays: window.currentHolidays,
+            workFrom: document.getElementById(`dayFrom_1`)?.value || "09:00",
+            workTo: document.getElementById(`dayTo_1`)?.value || "17:00",
+            capacityPerHour: parseInt(document.getElementById(`dayCap_1`)?.value) || 5,
+            prices: {
+                new: parseInt(document.getElementById('pNew').value) || 0,
+                followup: parseInt(document.getElementById('pFollow').value) || 0,
+                vip: parseInt(document.getElementById('pVIP').value) || 0
+            },
+            assistants: window.assistants,
+            enableAssistantCode: document.getElementById('enableAssistantCode').checked,
+            codeValidityMonths: document.getElementById('codeValidityMonths').value,
+            assistantCode: codeData
+        };
+
+        socialPlatforms.forEach(p => {
+            const key = p.id.replace('link','').toLowerCase();
+            profileData[key] = document.getElementById(p.id).value;
+        });
+        
+        const img64 = getImageBase64(); if (img64) profileData.heroImg = img64;
+
+        try {
+            await updateDoc(doc(db, "users", userDocId), profileData);
+            btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+            btn.style.background = 'var(--success-color)';
+            setTimeout(() => { btn.style.background = 'var(--lime)'; }, 2000);
+            
+            if (codeData) {
+                document.getElementById('currentCodeDisplay').style.display = 'block';
+                document.getElementById('assistantCodeValue').innerText = codeData.code;
+                document.getElementById('codeExpiryDate').innerText = new Date(codeData.expires).toLocaleDateString('ar-EG');
+            } else {
+                document.getElementById('currentCodeDisplay').style.display = 'none';
+            }
+        } catch(e) {
+            alert("فشل في الحفظ");
+            btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            setTimeout(() => { btn.innerHTML = '<i class="fa-solid fa-check"></i>'; }, 2000);
+        }
+    };
+
+    window.copyMyLink = () => {
+        navigator.clipboard.writeText(document.getElementById('userPublicLink').innerText);
+        const btn = document.querySelector('.public-link-btn');
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> تم النسخ بنجاح';
+        btn.style.borderColor = 'var(--lime)';
+        btn.style.color = 'var(--lime)';
+        setTimeout(() => {
+            btn.innerHTML = `<i class="fa-solid fa-copy"></i> <span id="userPublicLink">${window.location.host}/?id=${userDocId}</span>`;
+            btn.style.borderColor = 'rgba(255,255,255,0.2)';
+            btn.style.color = 'var(--text-dark)';
+        }, 2000);
+    };
+
+</script>
+
+</body>
+</html>
