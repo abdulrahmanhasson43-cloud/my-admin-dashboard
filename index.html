@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>لوحة تحكم العقرب الشاملة | V3</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* دمج كافة التنسيقات من الملفين */
+        :root {
+            --bg-color: #f4f5f7;
+            --white: #ffffff;
+            --text-dark: #1d1d1d;
+            --text-gray: #8e8e93;
+            --lime: #ccff00;
+            --ios-blue: #007aff;
+            --border-radius: 24px;
+            --danger-color: #ff3b30;
+            --success-color: #34c759;
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #f1d27b 100%);
+            --card-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body, html { width: 100%; height: 100%; background-color: #2c2c2c; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+
+        .app-container {
+            width: 100%; max-width: 450px; height: 100%; max-height: 900px;
+            background-color: var(--bg-color); position: relative; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        @media (min-width: 451px) { .app-container { height: 95vh; border-radius: 40px; border: 8px solid #111; } }
+
+        /* الشاشات */
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; background-color: var(--bg-color); transition: transform 0.4s ease; z-index: 1; opacity: 0; pointer-events: none; }
+        .screen.active { transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 2; }
+        
+        /* الهيدر */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 30px 25px 15px; background: var(--bg-color); position: sticky; top: 0; z-index: 10; }
+        .icon-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--white); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
+        
+        .content { flex: 1; padding: 10px 25px 100px; overflow-y: auto; scrollbar-width: none; }
+        .content::-webkit-scrollbar { display: none; }
+
+        /* الكروت */
+        .card { background: var(--white); border-radius: var(--border-radius); padding: 25px; margin-bottom: 20px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.02); }
+        
+        /* تنسيقات كروت الحجوزات المأخوذة من ملف أدمن الحجوزات */
+        .booking-card { display: flex; justify-content: space-between; align-items: center; padding: 18px; background: #fff; border-radius: 20px; margin-bottom: 12px; border-right: 5px solid #eee; transition: 0.3s; }
+        .booking-card.vip { border-right-color: #d4af37; background: #fffdf5; }
+        .booking-card.new { border-right-color: var(--ios-blue); }
+        .booking-card.follow { border-right-color: var(--success-color); }
+        
+        .b-badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: bold; margin-bottom: 5px; display: inline-block; }
+        .status-btn { width: 35px; height: 35px; border-radius: 50%; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .btn-wa { background: #25d366; color: white; }
+        .btn-done { background: #e8f5e9; color: var(--success-color); }
+        .btn-cancel { background: #ffebee; color: var(--danger-color); }
+
+        /* التابات */
+        .tabs-container { display: flex; background: #eee; padding: 5px; border-radius: 15px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: none; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 11px; color: var(--text-gray); }
+        .tab-btn.active { background: white; color: var(--text-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        /* المدخلات */
+        .input-group { margin-bottom: 15px; width: 100%; }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--text-gray); margin-bottom: 5px; font-weight: bold; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 14px; border: 1px solid #eee; border-radius: 15px; background: #fafafa; font-size: 0.95rem; }
+
+        /* المودال */
+        .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: flex-end; backdrop-filter: blur(4px); }
+        .modal-content { width: 100%; background: white; border-radius: 30px 30px 0 0; padding: 30px 25px; max-height: 85%; overflow-y: auto; transform: translateY(100%); transition: 0.4s ease; }
+        .modal.active { display: flex; }
+        .modal.active .modal-content { transform: translateY(0); }
+
+        /* الناف بار */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--white); padding: 12px 15px 25px; display: none; justify-content: space-around; align-items: center; border-radius: 30px 30px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); z-index: 50; }
+        .nav-item { color: var(--text-gray); font-size: 1.2rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+        .nav-item span { font-size: 0.65rem; font-weight: bold; }
+        .nav-item.active { color: var(--text-dark); }
+        .nav-center { width: 55px; height: 55px; background: var(--lime); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4rem; margin-top: -45px; box-shadow: 0 10px 20px rgba(204,255,0,0.3); border: 5px solid var(--bg-color); color: var(--text-dark); }
+
+        .btn-main { width: 100%; padding: 16px; background: var(--text-dark); color: white; border: none; border-radius: 16px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+
+        /* منطقة الطباعة */
+        #printArea { display: none; padding: 20px; background: white; width: 800px; font-family: 'Amiri', serif; direction: rtl; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <div id="loginSection" class="screen active" style="justify-content: center; align-items: center; text-align: center; padding: 30px;">
+        <i class="fa-solid fa-fingerprint" style="font-size: 60px; margin-bottom: 20px; color: var(--text-dark);"></i>
+        <h2>مرحباً بك في العقرب</h2>
+        <p style="color: var(--text-gray); margin-bottom: 30px;">نظام إدارة الحجوزات والبيانات المتكامل</p>
+        <button class="btn-main" onclick="loginWithGoogle()" style="background: white; color: black; border: 1px solid #eee; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> دخول بواسطة جوجل
+        </button>
+    </div>
+
+    <div id="setupSection" class="screen" style="padding: 40px 25px; justify-content: center;">
+        <h2 style="margin-bottom: 10px;">أنشئ رابطك المخصص</h2>
+        <p style="color: var(--text-gray); margin-bottom: 30px;">هذا المعرف سيكون رابط ملفك الشخصي</p>
+        <div class="input-group">
+            <input type="text" id="newUserId" placeholder="مثال: dr_ahmed" style="text-align: center; font-weight: bold; font-size: 1.2rem;">
+        </div>
+        <button class="btn-main" onclick="setupAccount()">تفعيل الحساب الآن</button>
+    </div>
+
+    <div id="homeScreen" class="screen">
+        <div class="header">
+            <span>الرئيسية</span>
+            <button class="icon-btn" onclick="logout()" style="color: var(--danger-color);"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+        <div class="content">
+            <div class="card" style="text-align: center;">
+                <div id="profileImgContainer" style="width: 100px; height: 100px; background: #eee; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; display: flex; justify-content: center; align-items: center; position: relative;">
+                    <i class="fa-solid fa-camera" style="position: absolute; color: white; font-size: 1.2rem; background: rgba(0,0,0,0.3); width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; opacity: 0; transition: 0.3s; cursor: pointer;" onclick="document.getElementById('fileInp').click()" id="camOverlay"></i>
+                    <img id="homeProfileImg" src="" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <i class="fa-solid fa-user" id="userPlaceholder" style="font-size: 40px; color: #ccc;"></i>
+                </div>
+                <input type="file" id="fileInp" hidden accept="image/*" onchange="previewImg(this)">
+                
+                <h2 id="dispName">تحميل...</h2>
+                <p id="dispTitle" style="color: var(--text-gray); font-size: 0.9rem;">المسمى الوظيفي</p>
+                
+                <div style="display: flex; justify-content: space-around; margin-top: 25px; border-top: 1px solid #f5f5f5; padding-top: 20px;">
+                    <div><h3 id="statCust">0</h3><p style="font-size: 0.7rem; color: var(--text-gray);">عميل</p></div>
+                    <div><h3 id="statRate">-</h3><p style="font-size: 0.7rem; color: var(--text-gray);">تقييم</p></div>
+                    <div><h3 id="statYear">-</h3><p style="font-size: 0.7rem; color: var(--text-gray);">خبرة</p></div>
+                </div>
+            </div>
+
+            <div class="card" style="background: var(--text-dark); color: white;">
+                <p style="font-size: 0.8rem; color: var(--lime); margin-bottom: 5px;">رابطك المباشر للعملاء:</p>
+                <div style="background: rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-family: monospace; display: flex; justify-content: space-between; align-items: center;">
+                    <span id="fullLink">loading...</span>
+                    <i class="fa-solid fa-copy" style="cursor: pointer;" onclick="copyLink()"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="profileScreen" class="screen">
+        <div class="header"><span>تعديل البيانات</span></div>
+        <div class="content">
+            <div class="card">
+                <div class="input-group"><label>الاسم بالكامل</label><input type="text" id="editName"></div>
+                <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="editTitle"></div>
+                <div class="input-group"><label>نبذة تعريفية</label><textarea id="editAbout" rows="3"></textarea></div>
+                <div class="input-group"><label>سنة التأسيس / الخبرة</label><input type="text" id="editYear"></div>
+                <div class="input-group"><label>رقم هاتف التواصل</label><input type="tel" id="editPhone" dir="ltr"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bookingScreen" class="screen">
+        <div class="header">
+            <span>لوحة الحجوزات</span>
+            <div style="display: flex; gap: 10px;">
+                <button class="icon-btn" onclick="openAssistantModal()"><i class="fa-solid fa-user-shield"></i></button>
+                <button class="icon-btn" onclick="openSettingsModal()"><i class="fa-solid fa-sliders"></i></button>
+            </div>
+        </div>
+        
+        <div id="bookingStatusSection" class="content">
+            <div id="bookingClosedUI" style="display: none; text-align: center; margin-top: 50px;">
+                <div class="card">
+                    <i class="fa-solid fa-calendar-xmark" style="font-size: 50px; color: var(--danger-color); margin-bottom: 20px;"></i>
+                    <h3>نظام الحجوزات مغلق</h3>
+                    <p style="color: var(--text-gray); margin: 15px 0;">أنت حالياً لا تستقبل أي حجوزات جديدة من صفحة المستخدم.</p>
+                    <button class="btn-main" onclick="toggleBookingSystem(true)" style="background: var(--success-color);">فتح استقبال الحجوزات</button>
+                </div>
+            </div>
+
+            <div id="bookingOpenUI" style="display: none;">
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="switchBTab('wait', this)">الانتظار (<span id="countWait">0</span>)</button>
+                    <button class="tab-btn" onclick="switchBTab('done', this)">المؤكدة</button>
+                    <button class="tab-btn" onclick="switchBTab('reports', this)">التقارير</button>
+                </div>
+
+                <div id="listWait"></div>
+                <div id="listDone" style="display: none;"></div>
+                
+                <div id="sectionReports" style="display: none;">
+                    <div class="card">
+                        <h4 style="margin-bottom:15px;">تقرير الجرد</h4>
+                        <div class="input-group"><label>من تاريخ</label><input type="date" id="repFrom"></div>
+                        <div class="input-group"><label>إلى تاريخ</label><input type="date" id="repTo"></div>
+                        <button class="btn-main" onclick="runReport()">عرض الإحصائيات</button>
+                        
+                        <div id="repResult" style="display:none; margin-top:20px; border-top:1px dashed #ddd; padding-top:15px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="card" style="padding:15px; margin:0; text-align:center;">
+                                    <h4 id="rTotal">0</h4><p style="font-size:10px;">إجمالي</p>
+                                </div>
+                                <div class="card" style="padding:15px; margin:0; text-align:center;">
+                                    <h4 id="rSuccess" style="color:var(--success-color)">0</h4><p style="font-size:10px;">ناجحة</p>
+                                </div>
+                            </div>
+                            <button class="btn-main" onclick="printPDF()" style="margin-top:15px; background:#f5f5f5; color:black; font-size:0.8rem;">تحميل PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="linksScreen" class="screen">
+        <div class="header"><span>روابط السوشيال ميديا</span></div>
+        <div class="content">
+            <div id="socialInputs"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav" id="mainNav">
+        <div class="nav-item active" onclick="navTo('homeScreen', this)">
+            <i class="fa-solid fa-house"></i><span>الرئيسية</span>
+        </div>
+        <div class="nav-item" onclick="navTo('profileScreen', this)">
+            <i class="fa-solid fa-user-pen"></i><span>بياناتي</span>
+        </div>
+        <div class="nav-center" onclick="saveAllData()" id="saveBtn">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <div class="nav-item" onclick="navTo('bookingScreen', this)">
+            <i class="fa-solid fa-calendar-day"></i><span>الحجوزات</span>
+        </div>
+        <div class="nav-item" onclick="navTo('linksScreen', this)">
+            <i class="fa-solid fa-share-nodes"></i><span>الروابط</span>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal"><div class="modal-content">
+        <h3>إعدادات الحجوزات</h3>
+        <div class="input-group"><label>سعر الكشف</label><input type="number" id="priceNew"></div>
+        <div class="input-group"><label>سعر الاستشارة</label><input type="number" id="priceFollow"></div>
+        <button class="btn-main" onclick="saveBookingSettings()">حفظ وإغلاق</button>
+        <button class="btn-main" onclick="toggleBookingSystem(false)" style="background:var(--danger-color); margin-top:10px;">إغلاق استقبال الحجوزات</button>
+    </div></div>
+
+    <div id="assistantModal" class="modal"><div class="modal-content">
+        <h3>إضافة مساعد</h3>
+        <div class="input-group"><label>الاسم</label><input type="text" id="astName"></div>
+        <div class="input-group"><label>رقم الهاتف (للدخول)</label><input type="tel" id="astPhone"></div>
+        <div class="input-group"><label>كلمة المرور</label><input type="text" id="astPass"></div>
+        <button class="btn-main" onclick="addAssistant()">تأكيد الإضافة</button>
+        <button class="btn-main" onclick="closeModals()" style="background:none; color:gray; margin-top:10px;">إلغاء</button>
+    </div></div>
+
+    <div id="printArea">
+        <h1 style="text-align:center;">تقرير جرد العقرب</h1>
+        <p id="printRange" style="text-align:center;"></p>
+        <hr>
+        <div id="printBody"></div>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxxWhIBlC92x_T4lBjDj7p7B3hrvhVZYg",
+      authDomain: "alaqrab-system.firebaseapp.com",
+      projectId: "alaqrab-system"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentUser = null, userDocId = null, userData = null, bookings = [];
+
+    // --- نظام التنقل ---
+    window.navTo = (id, el) => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(el) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+        }
+    };
+
+    window.closeModals = () => document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+    window.openSettingsModal = () => document.getElementById('settingsModal').classList.add('active');
+    window.openAssistantModal = () => document.getElementById('assistantModal').classList.add('active');
+
+    // --- المصادقة وجلب البيانات ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentUser = user;
+            const mapping = await getDoc(doc(db, "auth_mapping", user.uid));
+            if (mapping.exists()) {
+                userDocId = mapping.data().userDocId;
+                fetchFullData();
+            } else { navTo('setupSection'); }
+        } else {
+            navTo('loginSection');
+            document.getElementById('mainNav').style.display = 'none';
+        }
+    });
+
+    window.loginWithGoogle = () => signInWithPopup(auth, provider);
+    window.logout = () => signOut(auth);
+
+    window.setupAccount = async () => {
+        const id = document.getElementById('newUserId').value.trim().toLowerCase();
+        if(id.length < 3) return alert("المعرف قصير جداً");
+        const snap = await getDoc(doc(db, "users", id));
+        if(snap.exists()) return alert("المعرف مستخدم بالفعل");
+        
+        await setDoc(doc(db, "users", id), { 
+            uid: currentUser.uid, displayName: currentUser.displayName, 
+            bookingsActive: true, socials: { whatsapp:'', facebook:'', instagram:'' }
+        });
+        await setDoc(doc(db, "auth_mapping", currentUser.uid), { userDocId: id });
+        userDocId = id;
+        fetchFullData();
+    };
+
+    async function fetchFullData() {
+        const snap = await getDoc(doc(db, "users", userDocId));
+        userData = snap.data();
+        
+        // تحديث واجهة البروفايل
+        document.getElementById('dispName').innerText = userData.displayName || "بدون اسم";
+        document.getElementById('dispTitle').innerText = userData.title || "أضف مسمى وظيفي";
+        document.getElementById('editName').value = userData.displayName || "";
+        document.getElementById('editTitle').value = userData.title || "";
+        document.getElementById('editAbout').value = userData.about || "";
+        document.getElementById('editYear').value = userData.year || "";
+        document.getElementById('editPhone').value = userData.phone || "";
+        document.getElementById('fullLink').innerText = "alaqrab.link/" + userDocId;
+
+        if(userData.heroImg) {
+            document.getElementById('homeProfileImg').src = userData.heroImg;
+            document.getElementById('homeProfileImg').style.display = 'block';
+            document.getElementById('userPlaceholder').style.display = 'none';
+        }
+
+        renderSocials();
+        renderBookingUI();
+        document.getElementById('mainNav').style.display = 'flex';
+        navTo('homeScreen', document.querySelector('.nav-item'));
+        loadBookings();
+    }
+
+    function renderSocials() {
+        const div = document.getElementById('socialInputs');
+        div.innerHTML = '';
+        const platforms = ['whatsapp', 'facebook', 'instagram', 'tiktok', 'youtube', 'linkedin'];
+        platforms.forEach(p => {
+            div.innerHTML += `
+                <div class="card" style="display:flex; align-items:center; gap:15px; padding:15px;">
+                    <i class="fa-brands fa-${p}" style="font-size:1.5rem;"></i>
+                    <input type="text" id="social_${p}" value="${userData.socials?.[p] || ''}" placeholder="رابط ${p}" style="width:100%; border:none; outline:none;">
+                </div>
+            `;
+        });
+    }
+
+    // --- نظام الحجوزات (التحكم في الزرار اللي طلبته) ---
+    function renderBookingUI() {
+        if(userData.bookingsActive) {
+            document.getElementById('bookingOpenUI').style.display = 'block';
+            document.getElementById('bookingClosedUI').style.display = 'none';
+        } else {
+            document.getElementById('bookingOpenUI').style.display = 'none';
+            document.getElementById('bookingClosedUI').style.display = 'block';
+        }
+    }
+
+    window.toggleBookingSystem = async (state) => {
+        await updateDoc(doc(db, "users", userDocId), { bookingsActive: state });
+        userData.bookingsActive = state;
+        renderBookingUI();
+        closeModals();
+    };
+
+    function loadBookings() {
+        const q = query(collection(db, "users", userDocId, "bookings"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snap) => {
+            bookings = [];
+            document.getElementById('listWait').innerHTML = '';
+            document.getElementById('listDone').innerHTML = '';
+            let waitCount = 0;
+            snap.forEach(doc => {
+                const b = doc.data(); b.id = doc.id;
+                bookings.push(b);
+                const isWait = b.status === 'waiting' || !b.status;
+                const html = `
+                    <div class="booking-card ${b.type==='VIP'?'vip':(b.type==='إعادة'?'follow':'new')}">
+                        <div>
+                            <span class="b-badge">${b.type || 'كشف'}</span>
+                            <h4>${b.userName}</h4>
+                            <p style="font-size:12px; color:gray;">${b.date} | ${b.time}</p>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="status-btn btn-wa" onclick="window.open('https://wa.me/2${b.userPhone}')"><i class="fa-brands fa-whatsapp"></i></button>
+                            ${isWait ? `
+                                <button class="status-btn btn-done" onclick="updateB('${b.id}','done')"><i class="fa-solid fa-check"></i></button>
+                                <button class="status-btn btn-cancel" onclick="updateB('${b.id}','canceled')"><i class="fa-solid fa-xmark"></i></button>
+                            ` : `<span style="font-size:10px;">${b.status==='done'?'تم':'ملغي'}</span>`}
+                        </div>
+                    </div>
+                `;
+                if(isWait) { document.getElementById('listWait').innerHTML += html; waitCount++; }
+                else if(b.status === 'done') { document.getElementById('listDone').innerHTML += html; }
+            });
+            document.getElementById('countWait').innerText = waitCount;
+        });
+    }
+
+    window.updateB = async (id, s) => { if(confirm("تغيير الحالة؟")) await updateDoc(doc(db, "users", userDocId, "bookings", id), { status: s }); };
+
+    window.switchBTab = (t, el) => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById('listWait').style.display = t === 'wait' ? 'block' : 'none';
+        document.getElementById('listDone').style.display = t === 'done' ? 'block' : 'none';
+        document.getElementById('sectionReports').style.display = t === 'reports' ? 'block' : 'none';
+    };
+
+    // --- التقارير ---
+    window.runReport = () => {
+        const from = new Date(document.getElementById('repFrom').value);
+        const to = new Date(document.getElementById('repTo').value);
+        let total = 0, success = 0;
+        bookings.forEach(b => {
+            const d = new Date(b.date);
+            if(d >= from && d <= to) {
+                total++;
+                if(b.status === 'done') success++;
+            }
+        });
+        document.getElementById('rTotal').innerText = total;
+        document.getElementById('rSuccess').innerText = success;
+        document.getElementById('repResult').style.display = 'block';
+    };
+
+    window.printPDF = () => {
+        document.getElementById('printRange').innerText = `${document.getElementById('repFrom').value} : ${document.getElementById('repTo').value}`;
+        document.getElementById('printBody').innerHTML = `<p>إجمالي الحجوزات: ${document.getElementById('rTotal').innerText}</p><p>الناجحة: ${document.getElementById('rSuccess').innerText}</p>`;
+        document.getElementById('printArea').style.display = 'block';
+        html2pdf().from(document.getElementById('printArea')).save('تقرير.pdf').then(()=>document.getElementById('printArea').style.display='none');
+    };
+
+    // --- المساعدين ---
+    window.addAssistant = async () => {
+        const n = document.getElementById('astName').value, p = document.getElementById('astPhone').value, pass = document.getElementById('astPass').value;
+        if(!n || !p || !pass) return alert("أكمل البيانات");
+        await addDoc(collection(db, "users", userDocId, "assistants"), { name: n, phone: p, password: pass });
+        alert("تمت الإضافة"); closeModals();
+    };
+
+    // --- الحفظ العام ---
+    window.saveAllData = async () => {
+        const btn = document.getElementById('saveBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        
+        const soc = {};
+        ['whatsapp', 'facebook', 'instagram', 'tiktok', 'youtube', 'linkedin'].forEach(p => {
+            soc[p] = document.getElementById('social_'+p).value;
+        });
+
+        const data = {
+            displayName: document.getElementById('editName').value,
+            title: document.getElementById('editTitle').value,
+            about: document.getElementById('editAbout').value,
+            year: document.getElementById('editYear').value,
+            phone: document.getElementById('editPhone').value,
+            socials: soc
+        };
+
+        if(window.currentBase64) data.heroImg = window.currentBase64;
+
+        await updateDoc(doc(db, "users", userDocId), data);
+        alert("تم حفظ كل شيء!");
+        btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+        fetchFullData();
+    };
+
+    window.previewImg = (input) => {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('homeProfileImg').src = e.target.result;
+                document.getElementById('homeProfileImg').style.display = 'block';
+                document.getElementById('userPlaceholder').style.display = 'none';
+                window.currentBase64 = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    window.copyLink = () => { navigator.clipboard.writeText(document.getElementById('fullLink').innerText); alert("تم النسخ!"); };
+
+</script>
+</body>
+</html>
