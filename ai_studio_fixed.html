@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#002366">
+    <title>لوحة إدارة العقرب | النسخة الاحترافية</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
+
+    <style>
+        /* --- Global Design System & Glassmorphism --- */
+        :root {
+            --primary: #002366; /* Royal Blue */
+            --secondary: #191970; /* Midnight Azure */
+            --border-radius: 30px;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-main: #ffffff;
+            --text-muted: #cbd5e1;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Amiri', serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex; justify-content: center; align-items: center; overflow: hidden; 
+            color: var(--text-main);
+        }
+
+        .app-container {
+            width: 100%; max-width: 480px; height: 100%; max-height: 900px;
+            background: transparent;
+            position: relative; overflow: hidden;
+        }
+        
+        @media (min-width: 481px) { 
+            .app-container { 
+                height: 95vh; 
+                border-radius: var(--border-radius); 
+                background: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                box-shadow: var(--glass-shadow);
+            } 
+        }
+
+        /* Lockout Overlay */
+        #lockoutOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 35, 102, 0.85); backdrop-filter: blur(25px);
+            z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 30px; opacity: 0; pointer-events: none; transition: 0.5s ease;
+        }
+        #lockoutOverlay.active { opacity: 1; pointer-events: auto; }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease; z-index: 1; opacity: 0; pointer-events: none; transform: translateX(20px); }
+        .screen.active { transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 2; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; font-size: 1.5rem; font-weight: 700; background: transparent; z-index: 10; border-bottom: 1px solid var(--glass-border); }
+        .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; transition: 0.2s; color: #fff; }
+        
+        .content { flex: 1; padding: 20px 20px 110px; overflow-y: auto; scrollbar-width: none; }
+        .content::-webkit-scrollbar { display: none; }
+        
+        .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--border-radius); padding: 22px; margin-bottom: 20px; box-shadow: var(--glass-shadow); width: 100%; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        
+        .input-group { margin-bottom: 15px; }
+        .input-label { font-size: 1rem; margin-bottom: 8px; display: block; color: var(--text-main); }
+        .input-field, .select-field { width: 100%; padding: 12px 15px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 15px; color: var(--text-main); font-size: 1rem; transition: 0.2s; }
+        .input-field:focus, .select-field:focus { border-color: var(--success); background: rgba(0,0,0,0.3); }
+        .input-field::placeholder { color: var(--text-muted); }
+
+        .btn { padding: 12px 20px; border: none; border-radius: 15px; font-size: 1rem; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--success); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; pointer-events: none; transition: 0.3s; }
+        .modal.active { opacity: 1; pointer-events: auto; }
+        .modal-content { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 30px; border-radius: var(--border-radius); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(16,185,129,0.9); color: white; padding: 15px 25px; border-radius: 15px; z-index: 9999; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateX(-50%) translateY(100px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.3); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--glass-border); }
+        .nav-item { width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 1.5rem; transition: 0.2s; color: var(--text-muted); }
+        .nav-item.active { color: var(--success); }
+
+        .phone-input-group { display: flex; gap: 8px; }
+        .country-code { flex: 0.4; }
+        .phone-number { flex: 1; }
+
+        .payment-gateway-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .payment-box { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 15px; border: 1px solid var(--glass-border); text-align: center; cursor: pointer; transition: 0.2s; }
+        .payment-box.active { background: var(--success); border-color: var(--success); }
+        .payment-box:hover { transform: translateY(-2px); }
+
+        .country-settings { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid var(--glass-border); }
+        .country-flag { font-size: 2rem; margin-bottom: 10px; }
+        .country-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .digit-range { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 10px; }
+
+        .tab-btn { padding: 10px 15px; background: transparent; border: 1px solid var(--glass-border); color: var(--text-main); cursor: pointer; border-radius: 10px; margin-right: 10px; transition: 0.2s; }
+        .tab-btn.active { background: var(--success); border-color: var(--success); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div id="lockoutOverlay"></div>
+
+        <!-- HOME SCREEN -->
+        <div id="homeScreen" class="screen active">
+            <div class="header">
+                <span>🏠 الرئيسية</span>
+                <div class="icon-btn" onclick="window.openSettings()"><i class="fas fa-cog"></i></div>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <h2 id="homeName">اسم المستخدم</h2>
+                    <p id="homeTitle" style="color: var(--text-muted);">المسمى الوظيفي</p>
+                    <p id="homeAboutText" style="color: var(--text-muted); margin-top: 10px;"></p>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">إحصائيات سريعة</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700;" id="statCust">0</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">العملاء</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700;" id="statRating">-</div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem;">التقييم</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">📱 أرقام الاتصال</h3>
+                    <div id="phonesList"></div>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">💳 بوابات الدفع النشطة</h3>
+                    <div id="activePaymentsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS SCREEN -->
+        <div id="settingsScreen" class="screen">
+            <div class="header">
+                <span>⚙️ الإعدادات</span>
+                <div class="icon-btn" onclick="window.closeSettings()"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="content">
+                <!-- GENERAL SETTINGS TAB -->
+                <div id="generalSettingsTab" class="tab-content">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">البيانات الأساسية</h3>
+                        
+                        <div class="input-group">
+                            <label class="input-label">الاسم الكامل</label>
+                            <input type="text" id="adminName" class="input-field" placeholder="أدخل اسمك الكامل">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">المسمى الوظيفي</label>
+                            <input type="text" id="adminTitle" class="input-field" placeholder="مثال: حلاق محترف">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">نبذة عنك</label>
+                            <textarea id="adminAbout" class="input-field" placeholder="اكتب معلومات عنك" style="min-height: 80px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHONES TAB -->
+                <div id="phonesTab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">📱 أرقام الهاتف</h3>
+                        
+                        <div class="input-group">
+                            <label class="input-label">الرقم الأساسي</label>
+                            <div class="phone-input-group">
+                                <input type="text" id="phone1Code" class="input-field country-code" placeholder="+966" maxlength="5">
+                                <input type="text" id="phone1Number" class="input-field phone-number" placeholder="أدخل الرقم">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">الرقم الاحتياطي</label>
+                            <div class="phone-input-group">
+                                <input type="text" id="phone2Code" class="input-field country-code" placeholder="+966" maxlength="5">
+                                <input type="text" id="phone2Number" class="input-field phone-number" placeholder="أدخل الرقم">
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">هوت لاين (خدمة العملاء)</label>
+                            <div class="phone-input-group">
+                                <input type="text" id="holineCode" class="input-field country-code" placeholder="+966" maxlength="5">
+                                <input type="text" id="holineNumber" class="input-field phone-number" placeholder="أدخل الرقم">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COUNTRIES & PAYMENTS TAB -->
+                <div id="countriesTab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">🌍 إعدادات الدول وبوابات الدفع</h3>
+                        <div id="countriesList"></div>
+                    </div>
+                </div>
+
+                <!-- PAYMENT METHODS TAB -->
+                <div id="paymentTab" class="tab-content" style="display: none;">
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">💳 بوابات الدفع</h3>
+                        
+                        <!-- InstaPay Section -->
+                        <div class="input-group">
+                            <label class="input-label" style="display: flex; align-items: center; gap: 10px;">
+                                <input type="checkbox" id="instapayToggle" onchange="window.toggleInstaPaySection()" style="width: 20px; height: 20px; cursor: pointer;">
+                                InstaPay (منفصل)
+                            </label>
+                        </div>
+
+                        <div id="instapaySection" style="display: none; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; margin-bottom: 15px;">
+                            <div class="input-group">
+                                <label class="input-label">معرّف InstaPay</label>
+                                <input type="text" id="instapayId" class="input-field" placeholder="أدخل معرّف InstaPay">
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">مفتاح الوصول</label>
+                                <input type="password" id="instapayKey" class="input-field" placeholder="أدخل مفتاح الوصول">
+                            </div>
+                        </div>
+
+                        <!-- Other Wallets -->
+                        <div class="input-group">
+                            <label class="input-label">المحافظ الإلكترونية الأخرى</label>
+                            <textarea id="walletsList" class="input-field" placeholder="أدخل تفاصيل المحافظ (كل محفظة في سطر جديد)" style="min-height: 100px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABS NAVIGATION -->
+                <div style="margin-top: 20px; padding: 0 20px; display: flex; gap: 5px; overflow-x: auto;">
+                    <button class="tab-btn active" onclick="window.switchSettingsTab('general')">عام</button>
+                    <button class="tab-btn" onclick="window.switchSettingsTab('phones')">أرقام</button>
+                    <button class="tab-btn" onclick="window.switchSettingsTab('countries')">دول</button>
+                    <button class="tab-btn" onclick="window.switchSettingsTab('payment')">دفع</button>
+                </div>
+
+                <div style="padding: 0 20px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="window.saveAllSettings()" style="width: 100%;">
+                        <i class="fas fa-save"></i> حفظ جميع الإعدادات
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOOKINGS SCREEN -->
+        <div id="bookingsScreen" class="screen">
+            <div class="header">
+                <span>📅 الحجوزات</span>
+            </div>
+            <div class="content">
+                <div id="bookingsList"></div>
+            </div>
+        </div>
+
+        <!-- LINKS SCREEN -->
+        <div id="linksScreen" class="screen">
+            <div class="header">
+                <span>🔗 الروابط العامة</span>
+            </div>
+            <div class="content">
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">رابط ملفك العام</h3>
+                    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 15px; word-break: break-all; margin-bottom: 15px;" id="publicLinkDisplay">
+                        جاري التحميل...
+                    </div>
+                    <button class="btn btn-primary" onclick="window.copyPublicLink()" style="width: 100%;">
+                        <i class="fas fa-copy"></i> نسخ الرابط
+                    </button>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">روابط التواصل الاجتماعي</h3>
+                    <div id="socialLinksList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="window.openScreen('homeScreen')"><i class="fas fa-home"></i></div>
+            <div class="nav-item" onclick="window.openScreen('bookingsScreen')"><i class="fas fa-calendar"></i></div>
+            <div class="nav-item" onclick="window.openScreen('linksScreen')"><i class="fas fa-link"></i></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Global Variables
+        let currentUser = null;
+        let userDocId = null;
+
+        // Countries Database with phone digit ranges
+        const countriesPhoneData = {
+            'SA': { name: 'السعودية', flag: '🇸🇦', code: '+966', digitRange: '9-12', minDigits: 9, maxDigits: 12 },
+            'AE': { name: 'الإمارات', flag: '🇦🇪', code: '+971', digitRange: '7-11', minDigits: 7, maxDigits: 11 },
+            'KW': { name: 'الكويت', flag: '🇰🇼', code: '+965', digitRange: '8-12', minDigits: 8, maxDigits: 12 },
+            'QA': { name: 'قطر', flag: '🇶🇦', code: '+974', digitRange: '8-12', minDigits: 8, maxDigits: 12 },
+            'BH': { name: 'البحرين', flag: '🇧🇭', code: '+973', digitRange: '8-12', minDigits: 8, maxDigits: 12 },
+            'OM': { name: 'عمان', flag: '🇴🇲', code: '+968', digitRange: '8-12', minDigits: 8, maxDigits: 12 },
+            'JO': { name: 'الأردن', flag: '🇯🇴', code: '+962', digitRange: '7-11', minDigits: 7, maxDigits: 11 },
+            'LB': { name: 'لبنان', flag: '🇱🇧', code: '+961', digitRange: '7-11', minDigits: 7, maxDigits: 11 },
+            'EG': { name: 'مصر', flag: '🇪🇬', code: '+20', digitRange: '10-12', minDigits: 10, maxDigits: 12 }
+        };
+
+        // Payment Gateways per Country
+        const paymentGatewaysPerCountry = {
+            'SA': ['InstaPay', 'HyperPay', 'FawryPay', 'Telr'],
+            'AE': ['InstaPay', 'Telr', 'PayfortByAmazon'],
+            'KW': ['InstaPay', 'Telr'],
+            'QA': ['InstaPay', 'Telr'],
+            'BH': ['InstaPay', 'Telr'],
+            'OM': ['InstaPay', 'Telr'],
+            'JO': ['InstaPay', 'Telr'],
+            'LB': ['InstaPay', 'Telr'],
+            'EG': ['Fawry', 'Paymob', 'Telr']
+        };
+
+        // Initialize App
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                userDocId = user.uid;
+                initializeApp();
+            } else {
+                window.location.href = 'login.html';
+            }
+        });
+
+        async function initializeApp() {
+            await loadUserData();
+            renderCountriesSettings();
+        }
+
+        // Load User Data from Firebase
+        async function loadUserData() {
+            try {
+                const userDoc = await db.collection('users').doc(userDocId).get();
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    populateSettings(data);
+                    updateHomeScreen(data);
+                } else {
+                    console.log('No user data found, creating default structure');
+                    createDefaultUserStructure();
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showToast('خطأ في تحميل البيانات');
+            }
+        }
+
+        function populateSettings(data) {
+            // General Info
+            document.getElementById('adminName').value = data.displayName || '';
+            document.getElementById('adminTitle').value = data.title || '';
+            document.getElementById('adminAbout').value = data.about || '';
+
+            // Phone Numbers
+            if (data.phones) {
+                if (data.phones.primary) {
+                    document.getElementById('phone1Code').value = data.phones.primary.code || '';
+                    document.getElementById('phone1Number').value = data.phones.primary.number || '';
+                }
+                if (data.phones.backup) {
+                    document.getElementById('phone2Code').value = data.phones.backup.code || '';
+                    document.getElementById('phone2Number').value = data.phones.backup.number || '';
+                }
+                if (data.phones.hotline) {
+                    document.getElementById('holineCode').value = data.phones.hotline.code || '';
+                    document.getElementById('holineNumber').value = data.phones.hotline.number || '';
+                }
+            }
+
+            // Payment Methods
+            if (data.instaPay) {
+                document.getElementById('instapayToggle').checked = true;
+                document.getElementById('instapayId').value = data.instaPay.id || '';
+                document.getElementById('instapayKey').value = data.instaPay.key || '';
+                window.toggleInstaPaySection();
+            }
+
+            if (data.wallets) {
+                document.getElementById('walletsList').value = data.wallets.join('\n');
+            }
+        }
+
+        function updateHomeScreen(data) {
+            document.getElementById('homeName').innerText = data.displayName || 'بدون اسم';
+            document.getElementById('homeTitle').innerText = data.title || 'بدون مسمى';
+            document.getElementById('homeAboutText').innerText = data.about || '';
+
+            // Update phones list
+            let phonesHTML = '';
+            if (data.phones) {
+                if (data.phones.primary) {
+                    phonesHTML += `<div style="padding: 8px 0; border-bottom: 1px solid var(--glass-border);">
+                        <strong>الأساسي:</strong> ${data.phones.primary.code} ${data.phones.primary.number}
+                    </div>`;
+                }
+                if (data.phones.backup) {
+                    phonesHTML += `<div style="padding: 8px 0; border-bottom: 1px solid var(--glass-border);">
+                        <strong>الاحتياطي:</strong> ${data.phones.backup.code} ${data.phones.backup.number}
+                    </div>`;
+                }
+                if (data.phones.hotline) {
+                    phonesHTML += `<div style="padding: 8px 0;">
+                        <strong>هوت لاين:</strong> ${data.phones.hotline.code} ${data.phones.hotline.number}
+                    </div>`;
+                }
+            }
+            document.getElementById('phonesList').innerHTML = phonesHTML || 'لا توجد أرقام مسجلة';
+
+            // Update payment methods
+            let paymentsHTML = '';
+            if (data.instaPay?.id) {
+                paymentsHTML += '<div style="padding: 8px 0;">✅ InstaPay</div>';
+            }
+            if (data.wallets && data.wallets.length > 0) {
+                paymentsHTML += `<div style="padding: 8px 0;">✅ محافظ أخرى (${data.wallets.length})</div>`;
+            }
+            document.getElementById('activePaymentsList').innerHTML = paymentsHTML || 'لا توجد بوابات دفع مفعلة';
+        }
+
+        function renderCountriesSettings() {
+            let countriesHTML = '';
+            Object.entries(countriesPhoneData).forEach(([code, country]) => {
+                countriesHTML += `
+                    <div class="country-settings">
+                        <div class="country-flag">${country.flag}</div>
+                        <div class="country-name">${country.name}</div>
+                        <div class="digit-range">مفتاح الدول: ${country.code}</div>
+                        <div class="digit-range">عدد الأرقام: ${country.digitRange}</div>
+                        
+                        <h4 style="margin: 15px 0 10px;">بوابات الدفع المتاحة:</h4>
+                        <div class="payment-gateway-grid">
+                            ${paymentGatewaysPerCountry[code].map(gateway => `
+                                <div class="payment-box" data-country="${code}" data-gateway="${gateway}">
+                                    ${gateway}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('countriesList').innerHTML = countriesHTML;
+        }
+
+        // Screen Navigation
+        window.openScreen = (screenId) => {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if (screenId === 'homeScreen') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            else if (screenId === 'bookingsScreen') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            else if (screenId === 'linksScreen') document.querySelectorAll('.nav-item')[2].classList.add('active');
+        };
+
+        window.openSettings = () => {
+            document.getElementById('settingsScreen').classList.add('active');
+        };
+
+        window.closeSettings = () => {
+            document.getElementById('settingsScreen').classList.remove('active');
+        };
+
+        // Settings Tabs
+        window.switchSettingsTab = (tab) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            const tabMap = { general: 'generalSettingsTab', phones: 'phonesTab', countries: 'countriesTab', payment: 'paymentTab' };
+            document.getElementById(tabMap[tab]).style.display = 'block';
+            event.target.classList.add('active');
+        };
+
+        // Toggle InstaPay Section
+        window.toggleInstaPaySection = () => {
+            const section = document.getElementById('instapaySection');
+            section.style.display = document.getElementById('instapayToggle').checked ? 'block' : 'none';
+        };
+
+        // Save All Settings
+        window.saveAllSettings = async () => {
+            try {
+                const userData = {
+                    displayName: document.getElementById('adminName').value,
+                    title: document.getElementById('adminTitle').value,
+                    about: document.getElementById('adminAbout').value,
+                    phones: {
+                        primary: {
+                            code: document.getElementById('phone1Code').value || '+966',
+                            number: document.getElementById('phone1Number').value || ''
+                        },
+                        backup: {
+                            code: document.getElementById('phone2Code').value || '+966',
+                            number: document.getElementById('phone2Number').value || ''
+                        },
+                        hotline: {
+                            code: document.getElementById('holineCode').value || '+966',
+                            number: document.getElementById('holineNumber').value || ''
+                        }
+                    },
+                    wallets: document.getElementById('walletsList').value.split('\n').filter(w => w.trim() !== ''),
+                    updatedAt: new Date()
+                };
+
+                if (document.getElementById('instapayToggle').checked) {
+                    userData.instaPay = {
+                        id: document.getElementById('instapayId').value,
+                        key: document.getElementById('instapayKey').value
+                    };
+                }
+
+                await db.collection('users').doc(userDocId).update(userData);
+                showToast('✅ تم حفظ الإعدادات بنجاح');
+                await loadUserData();
+                window.closeSettings();
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showToast('❌ خطأ في حفظ الإعدادات');
+            }
+        };
+
+        // Public Link Management
+        window.copyPublicLink = () => {
+            const link = document.getElementById('publicLinkDisplay').innerText;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('✅ تم نسخ الرابط');
+            });
+        };
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Create Default Structure
+        async function createDefaultUserStructure() {
+            try {
+                await db.collection('users').doc(userDocId).set({
+                    displayName: '',
+                    title: '',
+                    about: '',
+                    phones: {
+                        primary: { code: '+966', number: '' },
+                        backup: { code: '+966', number: '' },
+                        hotline: { code: '+966', number: '' }
+                    },
+                    wallets: [],
+                    instaPay: { id: '', key: '' },
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+                console.log('Default structure created');
+            } catch (error) {
+                console.error('Error creating default structure:', error);
+            }
+        }
+    </script>
+</body>
+</html>
