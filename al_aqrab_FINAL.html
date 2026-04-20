@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#002366">
+    <title>لوحة إدارة العقرب | النسخة الاحترافية</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* --- Global Design System & Glassmorphism --- */
+        :root {
+            --primary: #002366; /* Royal Blue */
+            --secondary: #191970; /* Midnight Azure */
+            --border-radius: 30px;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-main: #ffffff;
+            --text-muted: #cbd5e1;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Amiri', serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body, html { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            display: flex; justify-content: center; align-items: center; overflow: hidden; 
+            color: var(--text-main);
+        }
+
+        /* Hidden Seasonal Themes */
+        .theme-ramadan { background-image: url('data:image/svg+xml;utf8,<svg opacity="0.05" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="50">🌙</text></svg>'), linear-gradient(135deg, var(--primary), var(--secondary)); }
+        .theme-eid { background-image: url('data:image/svg+xml;utf8,<svg opacity="0.05" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="50" font-size="50">✨</text></svg>'), linear-gradient(135deg, var(--primary), var(--secondary)); }
+
+        .app-container {
+            width: 100%; max-width: 480px; height: 100%; max-height: 900px;
+            background: transparent;
+            position: relative; overflow: hidden;
+        }
+        @media (min-width: 481px) { 
+            .app-container { 
+                height: 95vh; 
+                border-radius: var(--border-radius); 
+                background: var(--glass-bg);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                box-shadow: var(--glass-shadow);
+            } 
+        }
+
+        /* Super Admin Lockout Overlay */
+        #lockoutOverlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 35, 102, 0.85); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+            z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; padding: 30px; opacity: 0; pointer-events: none; transition: 0.5s ease;
+        }
+        #lockoutOverlay.active { opacity: 1; pointer-events: auto; }
+        #lockoutOverlay i { font-size: 5rem; color: var(--danger); margin-bottom: 20px; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+        #lockoutOverlay h1 { font-size: 2.5rem; margin-bottom: 10px; font-weight: 700; }
+        #lockoutOverlay p { font-size: 1.2rem; color: var(--text-muted); }
+
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease; z-index: 1; opacity: 0; pointer-events: none; transform: translateX(20px); }
+        .screen.active { transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 2; }
+        
+        /* Auth Screens (Glassmorphism) */
+        .auth-screen { justify-content: center; align-items: center; padding: 40px 30px; text-align: center; overflow-y: auto; }
+        .glass-card {
+            background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border); border-radius: var(--border-radius);
+            padding: 30px 20px; width: 100%; box-shadow: var(--glass-shadow);
+        }
+        .auth-icon-wrapper { width: 90px; height: 90px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px; border: 1px solid var(--glass-border); }
+        .auth-icon { font-size: 40px; color: #fff; }
+        .auth-title { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; }
+        .auth-subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 30px; }
+        .auth-switch { margin-top: 20px; font-size: 1rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .auth-switch span { color: #fff; font-weight: 700; text-decoration: underline; }
+
+        /* Header & Content */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 25px 20px 15px; font-size: 1.5rem; font-weight: 700; background: transparent; z-index: 10; border-bottom: 1px solid var(--glass-border); }
+        .icon-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 1.1rem; transition: 0.2s; color: #fff; }
+        
+        .content { flex: 1; padding: 20px 20px 110px; overflow-y: auto; scrollbar-width: none; }
+        .content::-webkit-scrollbar { display: none; }
+        
+        .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--border-radius); padding: 22px; margin-bottom: 20px; box-shadow: var(--glass-shadow); width: 100%; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        
+        /* Profile Image Upload */
+        .profile-widget { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: var(--border-radius); margin-bottom: 20px; border: 1px solid var(--glass-border); }
+        .profile-widget img { width: 65px; height: 65px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; cursor: pointer; transition: 0.3s; aspect-ratio: 1/1; }
+        .profile-widget img:hover { opacity: 0.8; transform: scale(1.05); }
+        .profile-widget h2 { font-size: 1.4rem; margin-bottom: 2px; }
+        .profile-widget p { font-size: 1rem; color: var(--text-muted); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-box { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--border-radius); padding: 15px 10px; text-align: center; }
+        .stat-box i { font-size: 1.4rem; color: #fff; margin-bottom: 8px; display: block; }
+        .stat-box h3 { font-size: 1.6rem; margin-bottom: 2px; font-weight: 700; }
+        .stat-box p { font-size: 0.9rem; color: var(--text-muted); }
+
+        .public-link-card { background: rgba(255,255,255,0.15); border-radius: var(--border-radius); padding: 20px; text-align: center; margin-bottom: 20px; border: 1px solid var(--glass-border); }
+        .link-display { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 15px; font-family: monospace; font-size: 0.9rem; word-break: break-all; margin-bottom: 15px; direction: ltr; border: 1px solid var(--glass-border); }
+        
+        .btn-main { width: 100%; height: 54px; background: #fff; color: var(--primary); border: none; border-radius: var(--border-radius); font-weight: 700; font-size: 1.2rem; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; gap: 10px; font-family: 'Amiri', serif; }
+        .btn-main:active { transform: scale(0.97); }
+        .btn-outline { background: transparent; color: #fff; border: 2px solid #fff; }
+
+        .dashboard-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .dash-btn { padding: 18px 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--border-radius); text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; gap: 10px; align-items: center; justify-content: center; }
+        .dash-btn i { font-size: 1.8rem; color: #fff; }
+        .dash-btn.active-sys { background: rgba(16, 185, 129, 0.3); border-color: var(--success); }
+
+        .section-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Inputs & Selects */
+        .input-group { width: 100%; margin-bottom: 18px; }
+        .input-group label { display: block; font-size: 1rem; color: var(--text-muted); margin-bottom: 8px; }
+        
+        input, select, textarea {
+            width: 100%; height: 52px; padding: 0 15px; 
+            border: 1px solid var(--glass-border); 
+            border-radius: var(--border-radius); 
+            background-color: rgba(0,0,0,0.2); 
+            color: #fff; 
+            font-size: 1.1rem; outline: none; transition: all 0.3s; 
+            font-family: 'Amiri', serif;
+        }
+        textarea { height: auto; padding: 15px; resize: vertical; min-height: 100px; }
+        input:focus, textarea:focus, select:focus { border-color: #fff; background-color: rgba(0,0,0,0.4); }
+        ::placeholder { color: rgba(255,255,255,0.5); }
+        select option { background: var(--primary); color: #fff; }
+
+        /* Custom Country Code Dropdown */
+        .phone-group { display: flex; gap: 10px; direction: rtl; margin-bottom: 18px; align-items: center; }
+        .country-select-wrapper { position: relative; width: 110px; flex-shrink: 0; }
+        .country-select-wrapper select { width: 100%; appearance: none; padding-right: 10px; padding-left: 30px; direction: ltr; text-align: center; }
+        .country-select-wrapper::after { content: '\f0d7'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; left: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #fff; }
+        .phone-group input { flex-grow: 1; text-align: left; direction: ltr; }
+
+        .icon-add-btn { width: 52px; height: 52px; flex-shrink: 0; border-radius: 50%; background: #fff; color: var(--primary); border: none; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+
+        /* Social Links */
+        .social-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--glass-border); cursor: pointer; }
+        .social-item:last-child { border-bottom: none; }
+        .social-info { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; }
+        .social-icon-box { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.3rem; color: white; }
+        .social-status { font-size: 0.9rem; padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); }
+        .social-status.active { background: rgba(16, 185, 129, 0.3); border-color: var(--success); }
+
+        /* Toast Notification */
+        .custom-toast {
+            position: absolute; bottom: -80px; left: 50%; transform: translateX(-50%);
+            background: #fff; color: var(--primary); padding: 14px 24px;
+            border-radius: var(--border-radius); font-size: 1.1rem; font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 9999;
+            transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); opacity: 0;
+            display: flex; align-items: center; gap: 12px; white-space: nowrap;
+        }
+        .custom-toast.show { bottom: 100px; opacity: 1; }
+
+        /* Modal */
+        .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: 0.3s ease; z-index: 100; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-content { width: 100%; background: var(--primary); border-top: 1px solid var(--glass-border); border-radius: 40px 40px 0 0; padding: 20px 25px 40px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); display: flex; flex-direction: column; align-items: center; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        .modal-drag { width: 50px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 10px; margin-bottom: 25px; cursor: pointer; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0, 35, 102, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 10px 15px 25px; display: flex; justify-content: space-between; align-items: center; border-radius: 40px 40px 0 0; z-index: 50; border-top: 1px solid var(--glass-border); }
+        .nav-item { color: var(--text-muted); font-size: 1.4rem; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+        .nav-item span { font-size: 0.8rem; font-weight: 700; }
+        .nav-item.active { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .nav-save { width: 60px; height: 60px; background: #fff; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.6rem; margin-top: -35px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); cursor: pointer; color: var(--primary); transition: 0.2s; border: 5px solid var(--primary); z-index: 10;}
+        .nav-save:active { transform: scale(0.9); }
+
+        /* Switches & Tabs */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.3); transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .booking-tabs { display: flex; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: var(--border-radius); padding: 5px; margin-bottom: 20px; }
+        .b-tab { flex: 1; text-align: center; font-size: 1.1rem; font-weight: 700; padding: 10px 5px; cursor: pointer; border-radius: 25px; transition: 0.2s; color: var(--text-muted); }
+        .b-tab.active { background: #fff; color: var(--primary); }
+
+        /* Booking Cards */
+        .booking-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--border-radius); padding: 18px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(10px); }
+        .bc-header { display: flex; justify-content: space-between; align-items: center; }
+        .bc-type { padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; background: rgba(255,255,255,0.2); }
+        .bc-body h4 { font-size: 1.3rem; margin-bottom: 4px; }
+        .bc-body .bc-phone { color: #fff; font-size: 1.1rem; direction: ltr; text-align: right; margin-bottom: 8px; opacity: 0.9; }
+        .bc-actions { display: flex; gap: 10px; border-top: 1px dashed var(--glass-border); padding-top: 12px; margin-top: 5px; }
+        .bc-btn { flex: 1; height: 40px; border-radius: 20px; border: none; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; font-family: 'Amiri', serif; }
+        .bc-btn-wa { background: #25d366; color: white; }
+        .bc-btn-done { background: rgba(16, 185, 129, 0.8); color: white; }
+        .bc-btn-cancel { background: rgba(239, 68, 68, 0.8); color: white; }
+
+        /* Export Buttons */
+        .export-btns { display: flex; gap: 10px; margin-bottom: 15px; }
+        .export-btn { flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #fff; background: transparent; color: #fff; font-family: 'Amiri', serif; font-size: 1rem; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .export-btn:hover { background: rgba(255,255,255,0.1); }
+
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- Super Admin Lockout Overlay -->
+    <div id="lockoutOverlay">
+        <i class="fas fa-lock"></i>
+        <h1>تم إيقاف الحساب</h1>
+        <p>يرجى تجديد الاشتراك لاستعادة الوصول إلى النظام وإدارة حجوزاتك.</p>
+    </div>
+
+    <div id="toastMsg" class="custom-toast"><i class="fas fa-info-circle"></i> <span id="toastText">رسالة</span></div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="screen auth-screen active">
+        <div class="glass-card">
+            <div class="auth-icon-wrapper"><i class="fa-solid fa-shield-halved auth-icon"></i></div>
+            <h2 class="auth-title">مرحباً بعودتك</h2>
+            <p class="auth-subtitle">سجل دخولك لإدارة منصتك باحترافية</p>
+            
+            <div class="input-group"><input type="email" id="loginEmail" placeholder="البريد الإلكتروني" dir="ltr" style="text-align: center;"></div>
+            <div class="input-group"><input type="password" id="loginPass" placeholder="كلمة المرور" dir="ltr" style="text-align: center;"></div>
+            
+            <button class="btn-main" onclick="loginWithEmail()">تسجيل الدخول</button>
+            
+            <button class="btn-main btn-outline" onclick="loginWithGoogle()" style="margin-top: 15px; margin-bottom: 20px;">
+                <i class="fa-brands fa-google"></i> المتابعة باستخدام جوجل
+            </button>
+            
+            <p class="auth-switch" onclick="showAuthScreen('signupScreen')">ليس لديك حساب؟ <span>إنشاء حساب جديد</span></p>
+            <p class="auth-switch" onclick="showAuthScreen('assistantLoginScreen')" style="margin-top: 15px;"><span><i class="fas fa-user-tie"></i> دخول المساعد</span></p>
+        </div>
+    </div>
+
+    <!-- Signup Screen -->
+    <div id="signupScreen" class="screen auth-screen">
+        <div class="glass-card">
+            <div class="auth-icon-wrapper"><i class="fa-solid fa-user-plus auth-icon"></i></div>
+            <h2 class="auth-title">إنشاء حساب</h2>
+            <p class="auth-subtitle">ابدأ رحلتك الرقمية الآن</p>
+            
+            <div class="input-group"><input type="email" id="signupEmail" placeholder="البريد الإلكتروني" dir="ltr" style="text-align: center;"></div>
+            <div class="input-group"><input type="password" id="signupPass" placeholder="كلمة المرور (6 أحرف على الأقل)" dir="ltr" style="text-align: center;"></div>
+            
+            <button class="btn-main" onclick="signupWithEmail()">إنشاء الحساب</button>
+            
+            <button class="btn-main btn-outline" onclick="loginWithGoogle()" style="margin-top: 15px; margin-bottom: 20px;">
+                <i class="fa-brands fa-google"></i> التسجيل باستخدام جوجل
+            </button>
+            
+            <p class="auth-switch" onclick="showAuthScreen('loginScreen')">لديك حساب بالفعل؟ <span>تسجيل الدخول</span></p>
+        </div>
+    </div>
+
+    <!-- ✅ شاشة اختيار المعرف - بعد التسجيل الجديد -->
+    <div id="chooseUsernameScreen" class="screen auth-screen">
+        <div class="glass-card">
+            <div class="auth-icon-wrapper"><i class="fa-solid fa-id-card auth-icon"></i></div>
+            <h2 class="auth-title">اختر معرّفك</h2>
+            <p class="auth-subtitle">هذا هو رابطك الخاص الذي يشاركه عملاؤك</p>
+            <div class="input-group">
+                <label style="font-size:0.9rem; color:var(--text-muted); display:block; margin-bottom:8px; text-align:right;">
+                    رابطك: <span style="color:#fff; direction:ltr; font-size:0.85rem; word-break:break-all;" id="usernamePreview">yoursite.com/#/...</span>
+                </label>
+                <input type="text" id="chosenUsername" placeholder="مثال: dr-ahmed أو salon2025" dir="ltr"
+                       style="text-align:left; letter-spacing:1px;"
+                       oninput="window.checkUsername(this.value)">
+                <div id="usernameStatus" style="margin-top:8px; font-size:0.95rem; min-height:24px;"></div>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top:6px;">أحرف إنجليزية وأرقام وشرطة فقط - بدون مسافات</p>
+            </div>
+            <button class="btn-main" id="confirmUsernameBtn"
+                    onclick="window.confirmUsername()"
+                    style="opacity:0.4; pointer-events:none;">
+                <i class="fas fa-check-double"></i> تأكيد المعرّف والبدء
+            </button>
+        </div>
+    </div>
+
+    <!-- Assistant Login Screen -->
+    <div id="assistantLoginScreen" class="screen auth-screen">
+        <div class="glass-card">
+            <div class="auth-icon-wrapper"><i class="fa-solid fa-headset auth-icon"></i></div>
+            <h2 class="auth-title">بوابة المساعدين</h2>
+            <p class="auth-subtitle">أدخل بياناتك للوصول إلى الحجوزات</p>
+            
+            <div class="phone-group" style="margin-bottom: 18px;">
+                <div class="country-select-wrapper">
+                    <select id="assistantLoginCode"></select>
+                </div>
+                <input type="tel" id="assistantLoginPhone" placeholder="رقم الهاتف المسجل">
+            </div>
+            <div class="input-group"><input type="password" id="assistantLoginPass" placeholder="كود الدخول المخصص" dir="ltr" style="text-align: center;"></div>
+            
+            <button class="btn-main" onclick="loginAssistant()">دخول المساعد</button>
+            
+            <p class="auth-switch" onclick="showAuthScreen('loginScreen')" style="margin-top: 25px;"><span><i class="fas fa-arrow-right"></i> العودة للوحة الإدارة</span></p>
+        </div>
+    </div>
+
+    <!-- Home Dashboard -->
+    <div id="homeScreen" class="screen">
+        <div class="header">
+            <span>الرئيسية</span>
+            <button class="icon-btn" onclick="logout()" style="color: var(--danger); border-color: var(--danger);"><i class="fa-solid fa-power-off"></i></button>
+        </div>
+        <div class="content">
+            
+            <h1 style="font-size: 2rem; margin-bottom: 5px;" id="greetingText">مرحباً بك</h1>
+            <p style="font-size: 1.1rem; color: var(--text-muted); margin-bottom: 20px;" id="currentDateText"></p>
+
+            <div class="profile-widget">
+                <input type="file" id="profileImageInput" accept="image/*" style="display:none;" onchange="handleProfileUpload(event)">
+                <img id="homeProfileImg" src="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" onclick="document.getElementById('profileImageInput').click()">
+                <div>
+                    <h2 id="homeName">اسم المستخدم</h2>
+                    <p id="homeTitle">المسمى الوظيفي</p>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-box"><i class="fas fa-users"></i><h3 id="statCust">0</h3><p>العملاء</p></div>
+                <div class="stat-box"><i class="fas fa-star"></i><h3 id="statRating">-</h3><p>التقييم</p></div>
+                <div class="stat-box"><i class="fas fa-calendar-check"></i><h3 id="statBookings">0</h3><p>الحجوزات</p></div>
+            </div>
+
+            <div class="public-link-card">
+                <h3 style="font-size: 1.3rem; margin-bottom: 10px;"><i class="fas fa-globe"></i> رابط منصتك العامة</h3>
+                <p style="margin-bottom: 15px;">شارك هذا الرابط مع عملائك للحجز المباشر</p>
+                <div class="link-display" id="publicLinkDisplay">...</div>
+                <button class="btn-main" style="height: 45px; font-size: 1.1rem;" onclick="copyMyLink()"><i class="fas fa-copy"></i> نسخ الرابط</button>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 25px;"><i class="fas fa-bolt"></i> إجراءات سريعة</h3>
+            <div class="dashboard-actions">
+                <div class="dash-btn" id="homeBookingBtn" onclick="toggleBookingFromHome()">
+                    <i class="fa-solid fa-power-off" id="homeBookingIcon"></i>
+                    <span id="homeBookingText">تفعيل الحجوزات</span>
+                </div>
+                <div class="dash-btn" onclick="switchTab('bookingsScreen', document.querySelectorAll('.nav-item')[3])">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>إدارة الحجوزات</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings / Profile Screen -->
+    <div id="profileScreen" class="screen">
+        <div class="header"><span>الإعدادات</span></div>
+        <div class="content">
+            
+            <div class="card">
+                <div class="section-title"><i class="fas fa-user-edit"></i> البيانات الشخصية</div>
+                <div class="input-group"><label>الاسم بالكامل</label><input type="text" id="adminName" placeholder="الاسم الذي يظهر للناس"></div>
+                <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="adminTitle" placeholder="مثال: مصمم جرافيك"></div>
+                <div class="input-group"><label>نبذة عنك</label><textarea id="adminAbout" placeholder="اكتب نبذة مختصرة..."></textarea></div>
+            </div>
+
+            <div class="card">
+                <div class="section-title"><i class="fas fa-phone-alt"></i> أرقام التواصل</div>
+                <label style="font-size:1rem; color:var(--text-muted); margin-bottom:8px; display:block;">📞 الرقم الأساسي</label>
+                <div class="phone-group">
+                    <div class="country-select-wrapper"><select id="phone1Code"></select></div>
+                    <input type="tel" id="phone1" placeholder="رقم الهاتف" oninput="validatePhoneInput(this, 'phone1Code')">
+                </div>
+                <label style="font-size:1rem; color:var(--text-muted); margin-bottom:8px; display:block; margin-top:10px;">📱 الرقم الاحتياطي</label>
+                <div class="phone-group">
+                    <div class="country-select-wrapper"><select id="phone2Code"></select></div>
+                    <input type="tel" id="phone2" placeholder="رقم احتياطي (اختياري)" oninput="validatePhoneInput(this, 'phone2Code')">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-wallet"></i> بوابات الدفع</div>
+                <!-- InstaPay منفصل -->
+                <div style="background:rgba(255,255,255,0.08); border:1px solid var(--glass-border); border-radius:20px; padding:15px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span style="font-size:1.1rem; font-weight:700;">💳 InstaPay</span>
+                        <label class="switch"><input type="checkbox" id="instapayToggle" onchange="window.toggleInstapaySection()"><span class="slider"></span></label>
+                    </div>
+                    <div id="instapaySection" style="display:none;">
+                        <input type="text" id="instapayUser" placeholder="رقم / يوزر InstaPay" dir="ltr" style="text-align:left;">
+                    </div>
+                </div>
+                <!-- محافظ أخرى -->
+                <label style="font-size:1rem; margin-bottom:8px; display:block; color:var(--text-muted);">محافظ إلكترونية أخرى</label>
+                <div class="phone-group">
+                    <select id="walletCompany" style="width:140px; flex-shrink:0;">
+                        <option value="">اختر المحفظة</option>
+                        <option value="Vodafone Cash">Vodafone Cash</option>
+                        <option value="Orange Cash">Orange Cash</option>
+                        <option value="Etisalat Cash">Etisalat Cash</option>
+                        <option value="WE Pay">WE Pay</option>
+                        <option value="STC Pay">STC Pay</option>
+                        <option value="Zain Cash">Zain Cash</option>
+                        <option value="Mada">Mada</option>
+                        <option value="KNet">KNet</option>
+                    </select>
+                    <input type="text" id="walletPhone" placeholder="الرقم أو اليوزر" dir="ltr" style="text-align:left;">
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="section-title"><i class="fa-solid fa-user-tie"></i> إدارة المساعدين</div>
+                <p style="font-size:0.9rem; margin-bottom:15px; color: var(--text-muted);">أضف مساعدين برقم الهاتف لإدارة الحجوزات.</p>
+                
+                <div class="phone-group" style="margin-bottom: 10px;">
+                    <div class="country-select-wrapper"><select id="assistantPhoneCode"></select></div>
+                    <input type="tel" id="assistantPhone" placeholder="رقم هاتف المساعد" oninput="validatePhoneInput(this)">
+                    <button type="button" class="icon-add-btn" onclick="openAssistantPermissions()"><i class="fas fa-plus"></i></button>
+                </div>
+                
+                <div id="assistantsList" style="display:flex; flex-direction:column; gap:10px; margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Screen -->
+    <div id="bookingsScreen" class="screen">
+        <div class="header">
+            <span>الحجوزات</span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:0.9rem;">استقبال</span>
+                <label class="switch"><input type="checkbox" id="isBookingActiveToggle" onchange="toggleBookingFromSwitch()"><span class="slider"></span></label>
+            </div>
+        </div>
+        <div class="content" style="padding-top:20px;">
+            <div class="booking-tabs">
+                <div class="b-tab active" onclick="switchBTab('active', this)">الانتظار</div>
+                <div class="b-tab" onclick="switchBTab('done', this)">الأرشيف</div>
+                <div class="b-tab" onclick="switchBTab('settings', this)">الضبط</div>
+            </div>
+
+            <div id="b_activeView">
+                <div class="input-group" style="position:relative;">
+                    <i class="fas fa-search" style="position:absolute; right:18px; top:18px; color:var(--text-muted);"></i>
+                    <input type="tel" id="searchInput" placeholder="ابحث برقم الهاتف..." oninput="filterBookings()" style="padding-right: 45px; text-align: left; direction: ltr;">
+                </div>
+                <div id="activeList"></div>
+            </div>
+
+            <div id="b_doneView" style="display:none;">
+                <div class="export-btns">
+                    <button class="export-btn" onclick="exportArchiveToExcel()"><i class="fas fa-file-excel" style="color:#10b981;"></i> إكسيل</button>
+                    <button class="export-btn" onclick="exportArchiveToPDF()"><i class="fas fa-file-pdf" style="color:#ef4444;"></i> PDF</button>
+                </div>
+                <div id="doneList"></div>
+            </div>
+
+            <div id="b_settingsView" style="display:none;">
+                <div class="card">
+                    <div class="section-title"><i class="fas fa-calendar-times"></i> الإجازات الرسمية</div>
+                    <p style="font-size:0.9rem; margin-bottom:10px; color:var(--text-muted);">حدد الأيام التي سيتم إغلاق الحجز فيها.</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <input type="date" id="holidayDate">
+                        <button type="button" class="icon-add-btn" onclick="addHoliday()"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <div id="holidaysList" style="display:flex; flex-wrap:wrap; gap: 10px;"></div>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title"><i class="far fa-calendar-check"></i> جداول المواعيد</div>
+                    <div id="advancedSchedulesContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links Screen -->
+    <div id="linksScreen" class="screen">
+        <div class="header"><span>الروابط الاجتماعية</span></div>
+        <div class="content"><div class="card" style="padding: 10px 22px;"><div id="socialList"></div></div></div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav" id="mainNav" style="display: none;">
+        <div class="nav-item active" onclick="switchTab('homeScreen', this)"><i class="fa-solid fa-house-chimney"></i><span>الرئيسية</span></div>
+        <div class="nav-item" onclick="switchTab('profileScreen', this)"><i class="fa-solid fa-sliders"></i><span>الإعدادات</span></div>
+        <div class="nav-save" onclick="saveAdminData()" id="saveBtnBtn"><i class="fa-solid fa-check-double"></i></div>
+        <div class="nav-item" onclick="switchTab('bookingsScreen', this)"><i class="fa-solid fa-calendar-check"></i><span>الحجوزات</span></div>
+        <div class="nav-item" onclick="switchTab('linksScreen', this)"><i class="fa-solid fa-link"></i><span>الروابط</span></div>
+    </div>
+
+    <!-- Link Modal -->
+    <div id="linkModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-drag" onclick="closeModal()"></div>
+            <div class="social-icon-box" id="modalIcon" style="width: 60px; height: 60px; font-size: 1.8rem; margin-bottom: 15px;"></div>
+            <h2 id="modalTitle" style="margin-bottom: 20px; font-size: 1.5rem; font-weight: 700;"></h2>
+            <div class="input-group"><input type="url" id="modalInput" dir="ltr" placeholder="ضع الرابط هنا" style="text-align: left;"></div>
+            <button class="btn-main" id="modalSaveBtn" onclick="saveModalLink()" style="color: var(--primary); background: #fff;">حفظ الرابط</button>
+        </div>
+    </div>
+    
+    <!-- Assistant Permissions Modal -->
+    <div id="assistantPermissionsModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-drag" onclick="closeAssistantPermissions()"></div>
+            <h3 style="margin-bottom:25px; font-size: 1.5rem; font-weight: 700;">إضافة مساعد</h3>
+            <div class="input-group"><input type="text" id="assistantSetPass" placeholder="تعيين كود دخول للمساعد" dir="ltr" style="text-align: center;"></div>
+            <div style="width:100%; display:flex; flex-direction:column; gap:18px; margin-bottom: 30px;">
+                <label style="display:flex; gap:12px; align-items:center; font-size: 1.1rem;"><input type="checkbox" id="permViewBookings" checked disabled style="width:20px; height:20px;"> عرض الحجوزات (أساسي)</label>
+                <label style="display:flex; gap:12px; align-items:center; font-size: 1.1rem;"><input type="checkbox" id="permChangeStatus" style="width:20px; height:20px;"> تغيير حالة الحجز</label>
+            </div>
+            <button class="btn-main" onclick="addAssistantToDB()" style="color: var(--primary); background: #fff;">إضافة المساعد</button>
+        </div>
+    </div>
+
+    <div style="display:none;">
+        <input type="hidden" id="linkWa"><input type="hidden" id="linkFb"><input type="hidden" id="linkInsta"><input type="hidden" id="linkTiktok"><input type="hidden" id="linkYt"><input type="hidden" id="linkTh"><input type="hidden" id="linkTg"><input type="hidden" id="linkSn"><input type="hidden" id="linkXt"><input type="hidden" id="linkLinkedin"><input type="hidden" id="linkMap"><input type="hidden" id="linkReviews">
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, query, orderBy, where, getDocs, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxxWhIBlC92x_T4lBjDj7p7B3hrvhVZYg",
+      authDomain: "alaqrab-system.firebaseapp.com",
+      projectId: "alaqrab-system",
+      storageBucket: "alaqrab-system.firebasestorage.app",
+      messagingSenderId: "660494503813",
+      appId: "1:660494503813:web:3f45fc069b3506f8657eec"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let currentAuthUser = null; let userDocId = null; let isAssistantMode = false; let assistantPermissions = {}; let currentModalSocialId = null;
+
+    // Dynamic Greeting
+    const hour = new Date().getHours();
+    document.getElementById('greetingText').innerText = hour < 12 ? 'صباح الخير ☀️' : 'مساء الخير 🌙';
+    document.getElementById('currentDateText').innerText = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // ✅ مفاتيح الدول مع حدود الأرقام
+    const countryCodes = [
+        { code:"+20",  flag:"🇪🇬", name:"مصر",       min:10, max:11 },
+        { code:"+966", flag:"🇸🇦", name:"السعودية",  min:9,  max:9  },
+        { code:"+971", flag:"🇦🇪", name:"الإمارات",  min:9,  max:9  },
+        { code:"+965", flag:"🇰🇼", name:"الكويت",    min:8,  max:8  },
+        { code:"+974", flag:"🇶🇦", name:"قطر",       min:8,  max:8  },
+        { code:"+973", flag:"🇧🇭", name:"البحرين",   min:8,  max:8  },
+        { code:"+968", flag:"🇴🇲", name:"عمان",      min:8,  max:8  },
+        { code:"+962", flag:"🇯🇴", name:"الأردن",    min:9,  max:9  },
+        { code:"+961", flag:"🇱🇧", name:"لبنان",     min:7,  max:8  },
+        { code:"+218", flag:"🇱🇾", name:"ليبيا",     min:9,  max:9  },
+        { code:"+212", flag:"🇲🇦", name:"المغرب",    min:9,  max:9  },
+        { code:"+216", flag:"🇹🇳", name:"تونس",      min:8,  max:8  },
+        { code:"+249", flag:"🇸🇩", name:"السودان",   min:9,  max:9  },
+        { code:"+967", flag:"🇾🇪", name:"اليمن",     min:9,  max:9  },
+        { code:"+964", flag:"🇮🇶", name:"العراق",    min:10, max:10 },
+        { code:"+963", flag:"🇸🇾", name:"سوريا",     min:9,  max:9  },
+    ];
+
+    function initSelects() {
+        const selects = ['phone1Code','phone2Code','assistantPhoneCode','assistantLoginCode'];
+        const optHtml = countryCodes.map(c => `<option value="${c.code}">${c.flag} ${c.code}</option>`).join('');
+        selects.forEach(id => { const el = document.getElementById(id); if(el) el.innerHTML = optHtml; });
+    }
+    initSelects();
+
+    // ✅ التحقق من عدد الأرقام حسب الدولة
+    window.validatePhoneInput = (input, codeId) => {
+        let val = input.value.replace(/\D/g, '');
+        const codeEl = codeId ? document.getElementById(codeId) : null;
+        const country = codeEl ? countryCodes.find(c => c.code === codeEl.value) : null;
+        const maxLen = country ? country.max : 12;
+        if (val.length > maxLen) val = val.slice(0, maxLen);
+        input.value = val;
+        if (country && val.length > 0) {
+            input.style.borderColor = val.length >= country.min ? 'var(--success)' : 'var(--danger)';
+        } else {
+            input.style.borderColor = '';
+        }
+    };
+
+    // Profile Image Upload (Base64 to Firestore)
+    window.handleProfileUpload = (event) => {
+        const file = event.target.files[0];
+        if (!file || !userDocId || isAssistantMode) return;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            img.onload = async () => {
+                // ✅ ضغط الصورة لـ 250x250 max لتجنب حجم Firestore الكبير
+                const MAX = 250;
+                let w = img.width, h = img.height;
+                if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+                else { w = Math.round(w * MAX / h); h = MAX; }
+                canvas.width = w; canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
+                const compressed = canvas.toDataURL('image/jpeg', 0.75);
+                document.getElementById('homeProfileImg').src = compressed;
+                try {
+                    // ✅ تحفظ في userDocId الخاص بالأدمن الحالي فقط
+                    await updateDoc(doc(db, "users", userDocId), { profileImage: compressed });
+                    showToast("✅ تم تحديث الصورة");
+                } catch(err) { showToast("❌ خطأ في رفع الصورة"); }
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const socialPlatforms =[{ id: 'linkWa', name: 'WhatsApp', icon: 'fa-whatsapp', type: 'fa-brands', color: '#25D366' }, { id: 'linkFb', name: 'Facebook', icon: 'fa-facebook-f', type: 'fa-brands', color: '#1877F2' }, { id: 'linkInsta', name: 'Instagram', icon: 'fa-instagram', type: 'fa-brands', color: '#E4405F' }, { id: 'linkTiktok', name: 'TikTok', icon: 'fa-tiktok', type: 'fa-brands', color: '#000000', iconColor: '#fff' }, { id: 'linkYt', name: 'YouTube', icon: 'fa-youtube', type: 'fa-brands', color: '#FF0000' }, { id: 'linkTh', name: 'Threads', icon: 'fa-threads', type: 'fa-brands', color: '#000000', iconColor: '#fff' }, { id: 'linkTg', name: 'Telegram', icon: 'fa-telegram', type: 'fa-brands', color: '#0088cc' }, { id: 'linkSn', name: 'Snapchat', icon: 'fa-snapchat', type: 'fa-brands', color: '#FFFC00', iconColor: '#000' }, { id: 'linkXt', name: 'X (Twitter)', icon: 'fa-x-twitter', type: 'fa-brands', color: '#000000', iconColor: '#fff' }, { id: 'linkLinkedin', name: 'LinkedIn', icon: 'fa-linkedin-in', type: 'fa-brands', color: '#0077B5' }, { id: 'linkMap', name: 'Google Maps', icon: 'fa-map-location-dot', type: 'fa-solid', color: '#EA4335' }, { id: 'linkReviews', name: 'Google Reviews', icon: 'fa-star', type: 'fa-solid', color: '#FBBC05' }];
+    function renderSocialList() {
+        const listDiv = document.getElementById('socialList'); if (!listDiv) return; listDiv.innerHTML = '';
+        socialPlatforms.forEach(p => { const val = document.getElementById(p.id).value; const hasLink = val && val.trim() !== ''; listDiv.innerHTML += `<div class="social-item" onclick="openModal('${p.id}', '${p.name}', '${p.type}', '${p.icon}', '${p.color}', '${p.iconColor || '#fff'}')"><div class="social-info"><div class="social-icon-box" style="background: ${p.color}; color: ${p.iconColor || '#fff'}"><i class="${p.type} ${p.icon}"></i></div><span>${p.name}</span></div><div class="social-status ${hasLink ? 'active' : ''}">${hasLink ? 'متصل' : 'إضافة'}</div></div>`; });
+    }
+
+    window.openModal = function(id, name, typeClass, iconClass, bgColor, iconColor) { currentModalSocialId = id; document.getElementById('modalTitle').innerText = name; document.getElementById('modalIcon').style.background = bgColor; document.getElementById('modalIcon').style.color = iconColor; document.getElementById('modalIcon').innerHTML = `<i class="${typeClass} ${iconClass}"></i>`; document.getElementById('modalInput').value = document.getElementById(id).value; document.getElementById('modalSaveBtn').innerText = 'حفظ الرابط'; document.getElementById('linkModal').classList.add('active'); };
+    window.closeModal = () => document.getElementById('linkModal').classList.remove('active');
+    window.saveModalLink = function() { document.getElementById(currentModalSocialId).value = document.getElementById('modalInput').value; document.getElementById('modalSaveBtn').innerHTML = '<i class="fas fa-check-double"></i> تم الحفظ'; renderSocialList(); setTimeout(() => closeModal(), 800); };
+
+    window.switchTab = (screenId, el) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(screenId).classList.add('active'); if (el) { document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); el.classList.add('active'); } if (screenId === 'linksScreen') renderSocialList(); };
+    window.switchBTab = (tab, el) => { document.querySelectorAll('.b-tab').forEach(i => i.classList.remove('active')); el.classList.add('active');['active','done','settings'].forEach(t => { document.getElementById(`b_${t}View`).style.display = t === tab ? 'block' : 'none'; }); };
+
+    window.allBookings =[]; window.officialHolidays = [];
+    const daysMap =[{ id: 6, name: "السبت" }, { id: 0, name: "الأحد" }, { id: 1, name: "الإثنين" }, { id: 2, name: "الثلاثاء" }, { id: 3, name: "الأربعاء" }, { id: 4, name: "الخميس" }, { id: 5, name: "الجمعة" }];
+    
+    function buildScheduleUI() {
+        const container = document.getElementById('advancedSchedulesContainer'); container.innerHTML = '';
+        daysMap.forEach(day => {
+            container.innerHTML += `
+                <div style="background:rgba(0,0,0,0.2); border:1px solid var(--glass-border); border-radius:20px; padding:15px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <label style="font-weight:700; font-size:1.1rem; display:flex; align-items:center; gap:10px;"><input type="checkbox" id="dayOn_${day.id}" onchange="toggleDayInputs(${day.id})" style="width:20px; height:20px;"> ${day.name}</label>
+                        <span id="statusBadge_${day.id}" style="padding:5px 12px; border-radius:15px; font-size:0.9rem; background:rgba(239,68,68,0.3); color:#fff;">مغلق</span>
+                    </div>
+                    <div id="dayInputs_${day.id}" style="display:none; flex-direction:column; gap:12px; border-top:1px dashed var(--glass-border); padding-top:15px;">
+                        <div style="display: flex; gap: 15px;">
+                            <div style="flex: 1;"><label style="font-size:0.9rem; color:var(--text-muted);">من</label><input type="time" id="dayFrom_${day.id}"></div>
+                            <div style="flex: 1;"><label style="font-size:0.9rem; color:var(--text-muted);">إلى</label><input type="time" id="dayTo_${day.id}"></div>
+                        </div>
+                        <div><label style="font-size:0.9rem; color:var(--text-muted);">العدد الأقصى</label><input type="number" id="dayCap_${day.id}" placeholder="مثال: 10"></div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    window.toggleDayInputs = (id) => {
+        const isChecked = document.getElementById(`dayOn_${id}`).checked; const inputsDiv = document.getElementById(`dayInputs_${id}`); const badge = document.getElementById(`statusBadge_${id}`);
+        if(isChecked) { inputsDiv.style.display = 'flex'; badge.innerText = 'عمل'; badge.style.background = 'rgba(16,185,129,0.5)'; } 
+        else { inputsDiv.style.display = 'none'; badge.innerText = 'مغلق'; badge.style.background = 'rgba(239,68,68,0.3)'; }
+    };
+
+    // Holidays Management
+    window.addHoliday = () => {
+        const date = document.getElementById('holidayDate').value;
+        if(date && !window.officialHolidays.includes(date)) {
+            window.officialHolidays.push(date);
+            renderHolidays();
+            document.getElementById('holidayDate').value = '';
+        }
+    };
+    window.removeHoliday = (idx) => { window.officialHolidays.splice(idx, 1); renderHolidays(); };
+    function renderHolidays() {
+        const list = document.getElementById('holidaysList'); list.innerHTML = '';
+        window.officialHolidays.forEach((h, i) => {
+            list.innerHTML += `<div style="background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); padding:8px 15px; border-radius:20px; font-size:1rem; display:inline-flex; align-items:center; gap:10px;">${h} <i class="fas fa-times" style="color:var(--danger); cursor:pointer;" onclick="window.removeHoliday(${i})"></i></div>`;
+        });
+    }
+
+    window.syncBookingUI = (isActive) => {
+        document.getElementById('isBookingActiveToggle').checked = isActive;
+        const homeBtn = document.getElementById('homeBookingBtn'), homeIcon = document.getElementById('homeBookingIcon'), homeText = document.getElementById('homeBookingText');
+        if(isActive) { homeBtn.classList.add('active-sys'); homeIcon.className = 'fa-solid fa-check-circle'; homeText.innerText = 'الحجوزات مفعلة'; } 
+        else { homeBtn.classList.remove('active-sys'); homeIcon.className = 'fa-solid fa-power-off'; homeText.innerText = 'تفعيل الحجوزات'; }
+    };
+    window.toggleBookingFromHome = async () => {
+        if (!userDocId || isAssistantMode) return;
+        const newState = !document.getElementById('isBookingActiveToggle').checked;
+        window.syncBookingUI(newState);
+        // ✅ booking_enabled هو الاسم الصحيح الذي يقرأه كود المستخدم
+        await updateDoc(doc(db, "users", userDocId), { booking_enabled: newState });
+        showToast(newState ? "✅ تم تفعيل الحجوزات" : "🔴 تم إيقاف الحجوزات");
+    };
+    window.toggleBookingFromSwitch = async () => {
+        if (!userDocId || isAssistantMode) return;
+        const newState = document.getElementById('isBookingActiveToggle').checked;
+        window.syncBookingUI(newState);
+        // ✅ booking_enabled هو الاسم الصحيح الذي يقرأه كود المستخدم
+        await updateDoc(doc(db, "users", userDocId), { booking_enabled: newState });
+        showToast(newState ? "✅ تم تفعيل الحجوزات" : "🔴 تم إيقاف الحجوزات");
+    };
+
+    window.filterBookings = () => {
+        const queryText = document.getElementById('searchInput').value.trim(); const activeC = document.getElementById('activeList'); const doneC = document.getElementById('doneList'); activeC.innerHTML = ''; doneC.innerHTML = '';
+        let activeCount = 0;
+        window.allBookings.forEach(b => {
+            if (queryText && b.userPhone && !b.userPhone.includes(queryText)) return;
+            let typeText = b.type || 'كشف جديد';
+            const isDone = b.status === 'done', isCanceled = b.status === 'canceled', isActive = !isDone && !isCanceled;
+            if(isActive) activeCount++;
+            
+            const tagHtml = isDone ? `<span style="color:#10b981;"><i class="fas fa-check-circle"></i> مكتمل</span>` : isCanceled ? `<span style="color:#ef4444;"><i class="fas fa-times-circle"></i> ملغي</span>` : '';
+            const canChangeStatus = !isAssistantMode || assistantPermissions.changeStatus;
+            
+            const actionsHtml = isActive && canChangeStatus ? `
+                <button class="bc-btn bc-btn-done" onclick="window.updateStatus('${b.id}', 'done')"><i class="fas fa-check"></i> تنفيذ</button>
+                <button class="bc-btn bc-btn-cancel" onclick="window.updateStatus('${b.id}', 'canceled')"><i class="fas fa-times"></i> إلغاء</button>
+            ` : '';
+
+            const card = `
+                <div class="booking-card" style="${isCanceled ? 'opacity:0.6;' : ''}">
+                    <div class="bc-header">
+                        <span class="bc-type">${typeText}</span>
+                        <span style="font-size: 1rem; font-weight: 700;">${tagHtml}</span>
+                    </div>
+                    <div class="bc-body">
+                        <h4 class="bc-name">${b.userName || 'غير معروف'}</h4>
+                        <p class="bc-phone">${b.userPhone || ''}</p>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);"><i class="far fa-calendar-alt"></i> ${b.date || '---'} | <i class="far fa-clock"></i> ${b.timeLabel || '---'}</p>
+                    </div>
+                    <div class="bc-actions">
+                        <button class="bc-btn bc-btn-wa" onclick="window.open('https://wa.me/${b.userPhone}')"><i class="fa-brands fa-whatsapp"></i> واتساب</button>
+                        ${actionsHtml}
+                    </div>
+                </div>`;
+            if (isActive) activeC.innerHTML += card; else doneC.innerHTML += card;
+        });
+        document.getElementById('statBookings').innerText = activeCount;
+        if (activeC.innerHTML === '') activeC.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:30px; font-size:1.1rem;">لا يوجد حجوزات قيد الانتظار.</p>';
+    };
+
+    window.updateStatus = async (id, newStatus) => { if (isAssistantMode && !assistantPermissions.changeStatus) return; if (confirm(newStatus === 'done' ? "تأكيد التنفيذ؟" : "تأكيد الإلغاء؟")) { await updateDoc(doc(db, "users", userDocId, "bookings", id), { status: newStatus }); } };
+
+    // Export Functions
+    window.exportArchiveToExcel = () => {
+        const archiveData = window.allBookings.filter(b => b.status === 'done' || b.status === 'canceled').map(b => ({
+            "الاسم": b.userName, "رقم الهاتف": b.userPhone, "التاريخ": b.date, "الوقت": b.timeLabel, "الحالة": b.status === 'done' ? 'مكتمل' : 'ملغي'
+        }));
+        if(archiveData.length === 0) return showToast("لا يوجد بيانات للتصدير");
+        const ws = XLSX.utils.json_to_sheet(archiveData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Archive");
+        XLSX.writeFile(wb, "Bookings_Archive.xlsx");
+    };
+
+    window.exportArchiveToPDF = () => {
+        const element = document.getElementById('doneList');
+        if(!element.innerHTML.trim()) return showToast("لا يوجد بيانات للتصدير");
+        html2pdf().from(element).set({ margin: 1, filename: 'Bookings_Archive.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } }).save();
+    };
+
+    window.showToast = (msg) => {
+        const toast = document.getElementById('toastMsg');
+        document.getElementById('toastText').innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    };
+
+    window.copyMyLink = () => {
+        const link = `https://${window.location.host}/?id=${userDocId}`;
+        navigator.clipboard.writeText(link);
+        showToast("تم نسخ الرابط بنجاح!");
+    };
+
+    // --- Auth Logic ---
+    window.showAuthScreen = (id) => { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); document.getElementById('mainNav').style.display = 'none'; };
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            currentAuthUser = user;
+            try {
+                const mappingDoc = await getDoc(doc(db, "auth_mapping", user.uid));
+                if (mappingDoc.exists()) {
+                    const mdata = mappingDoc.data();
+                    // ✅ تحقق أن userDoc موجود فعلاً (حل التداخل القديم)
+                    const userDocSnap = await getDoc(doc(db, "users", mdata.userDocId));
+                    if (userDocSnap.exists()) {
+                        userDocId = mdata.userDocId;
+                        isAssistantMode = false;
+                        loadData();
+                    } else {
+                        // mapping موجود لكن user مش موجود - تداخل قديم
+                        await window.setupAccount(user.uid);
+                    }
+                } else {
+                    await window.setupAccount(user.uid);
+                }
+            } catch(e) {
+                console.error('Auth error:', e);
+                showToast('خطأ في تحميل الحساب');
+            }
+        } else { showAuthScreen('loginScreen'); }
+    });
+
+    window.loginWithGoogle = () => signInWithPopup(auth, provider).catch(e => showToast("فشل تسجيل الدخول بجوجل"));
+    
+    window.loginWithEmail = () => {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if(!email || !pass) return showToast("يرجى إدخال البيانات");
+        signInWithEmailAndPassword(auth, email, pass).catch(e => showToast("بيانات الدخول غير صحيحة"));
+    };
+
+    window.signupWithEmail = () => {
+        const email = document.getElementById('signupEmail').value.trim();
+        const pass = document.getElementById('signupPass').value;
+        if (!email) return showToast("أدخل البريد الإلكتروني");
+        if (pass.length < 6) return showToast("كلمة المرور 6 أحرف على الأقل");
+        createUserWithEmailAndPassword(auth, email, pass)
+            .then(cred => window.setupAccount(cred.user.uid))
+            .catch(e => {
+                if (e.code === 'auth/email-already-in-use') showToast("هذا البريد مسجل مسبقاً");
+                else showToast("خطأ: " + e.message);
+            });
+    };
+
+    // Fixed Assistant Login Logic
+    window.loginAssistant = async () => { 
+        const code = document.getElementById('assistantLoginCode').value;
+        const phone = document.getElementById('assistantLoginPhone').value.trim();
+        const pass = document.getElementById('assistantLoginPass').value.trim();
+        if(!phone || !pass) return showToast("يرجى إدخال رقم الهاتف وكود الدخول");
+
+        const fullPhone = code + '|' + phone;
+        const q = query(collection(db, "assistants"), where("phone", "==", fullPhone), where("password", "==", pass));
+        const snap = await getDocs(q);
+        
+        if(snap.empty) {
+            showToast("بيانات المساعد غير صحيحة");
+        } else {
+            const assistantData = snap.docs[0].data();
+            userDocId = assistantData.adminId;
+            isAssistantMode = true;
+            assistantPermissions = assistantData.permissions;
+            showToast("تم تسجيل الدخول بنجاح");
+            loadData();
+        }
+    };
+
+    window.logout = () => {
+        if(isAssistantMode) {
+            isAssistantMode = false; userDocId = null; assistantPermissions = {};
+            showAuthScreen('loginScreen');
+        } else {
+            signOut(auth);
+        }
+    };
+
+    let _pendingUid = null;
+    let _usernameTimer = null;
+
+    window.setupAccount = async (uid) => {
+        _pendingUid = uid;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('chooseUsernameScreen').classList.add('active');
+        document.getElementById('mainNav').style.display = 'none';
+    };
+
+    window.checkUsername = async (val) => {
+        const cleaned = val.toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20);
+        document.getElementById('chosenUsername').value = cleaned;
+        const host = window.location.host;
+        document.getElementById('usernamePreview').innerText = host + '/#/' + (cleaned || '...');
+        const btn = document.getElementById('confirmUsernameBtn');
+        const status = document.getElementById('usernameStatus');
+
+        if (cleaned.length < 3) {
+            status.innerHTML = '<span style="color:var(--text-muted);">أدخل 3 أحرف على الأقل</span>';
+            btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none'; return;
+        }
+        status.innerHTML = '<span style="color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> جاري التحقق...</span>';
+        clearTimeout(_usernameTimer);
+        _usernameTimer = setTimeout(async () => {
+            const snap = await getDoc(doc(db, "users", cleaned));
+            if (snap.exists()) {
+                status.innerHTML = '<span style="color:var(--danger);"><i class="fas fa-times-circle"></i> هذا المعرف محجوز</span>';
+                btn.style.opacity = '0.4'; btn.style.pointerEvents = 'none';
+            } else {
+                status.innerHTML = '<span style="color:var(--success);"><i class="fas fa-check-circle"></i> متاح ✅</span>';
+                btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
+            }
+        }, 600);
+    };
+
+    window.confirmUsername = async () => {
+        const chosen = document.getElementById('chosenUsername').value.trim();
+        if (chosen.length < 3 || !_pendingUid) return;
+        const btn = document.getElementById('confirmUsernameBtn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإنشاء...';
+        btn.style.pointerEvents = 'none';
+        try {
+            const snap = await getDoc(doc(db, "users", chosen));
+            if (snap.exists()) {
+                showToast('❌ هذا المعرف محجوز الآن');
+                btn.innerHTML = '<i class="fas fa-check-double"></i> تأكيد المعرّف والبدء';
+                btn.style.pointerEvents = 'auto'; return;
+            }
+            await setDoc(doc(db, "users", chosen), {
+                uid: _pendingUid, isActive: true,
+                booking_enabled: true,
+                subscription_status: 'active',
+                createdAt: new Date()
+            });
+            await setDoc(doc(db, "auth_mapping", _pendingUid), { userDocId: chosen });
+            userDocId = chosen; isAssistantMode = false; _pendingUid = null;
+            showToast('🎉 تم إنشاء حسابك!');
+            loadData();
+        } catch(e) {
+            showToast('❌ خطأ: ' + e.message);
+            btn.innerHTML = '<i class="fas fa-check-double"></i> تأكيد المعرّف والبدء';
+            btn.style.pointerEvents = 'auto';
+        }
+    };
+
+    // Fixed Assistant DB Leakage (Strict Scoping)
+    let pendingAssistantPhone = '';
+    window.openAssistantPermissions = () => { 
+        const phone = document.getElementById('assistantPhone').value.trim(); 
+        const code = document.getElementById('assistantPhoneCode').value;
+        if (!phone) return showToast('أدخل رقم هاتف المساعد أولاً'); 
+        pendingAssistantPhone = code + '|' + phone; 
+        document.getElementById('assistantSetPass').value = '';
+        document.getElementById('assistantPermissionsModal').classList.add('active'); 
+    };
+    window.closeAssistantPermissions = () => document.getElementById('assistantPermissionsModal').classList.remove('active');
+    
+    window.addAssistantToDB = async () => { 
+        const pass = document.getElementById('assistantSetPass').value.trim();
+        if(!pass) return showToast("يرجى تعيين كود دخول للمساعد");
+        
+        const permissions = { viewBookings: true, changeStatus: document.getElementById('permChangeStatus').checked }; 
+        await addDoc(collection(db, "assistants"), {
+            adminId: userDocId,
+            phone: pendingAssistantPhone,
+            password: pass,
+            permissions: permissions
+        });
+        showToast("تم إضافة المساعد بنجاح");
+        fetchAssistants();
+        closeAssistantPermissions(); 
+        document.getElementById('assistantPhone').value = ''; 
+    };
+
+    async function fetchAssistants() {
+        if(isAssistantMode) return;
+        const q = query(collection(db, "assistants"), where("adminId", "==", userDocId));
+        const snap = await getDocs(q);
+        const list = document.getElementById('assistantsList'); list.innerHTML = '';
+        snap.forEach(docSnap => {
+            const a = docSnap.data();
+            list.innerHTML += `<div style="background:rgba(255,255,255,0.1); border:1px solid var(--glass-border); padding:12px 18px; border-radius:20px; font-size:1.1rem; display:flex; justify-content:space-between; align-items:center; direction:ltr;">${a.phone.replace('|', ' ')} <i class="fas fa-trash-alt" style="color:var(--danger); cursor:pointer; padding:5px;" onclick="window.removeAssistantDB('${docSnap.id}')"></i></div>`;
+        });
+    }
+
+    window.removeAssistantDB = async (id) => {
+        if(confirm("هل أنت متأكد من حذف المساعد؟")) {
+            await deleteDoc(doc(db, "assistants", id));
+            fetchAssistants();
+        }
+    };
+
+    async function loadData() {
+        buildScheduleUI();
+        const publicLink = `https://${window.location.host}/?id=${userDocId}`;
+        document.getElementById('publicLinkDisplay').innerText = publicLink;
+        
+        // Super Admin Lockout Listener & Data Fetch
+        onSnapshot(doc(db, "users", userDocId), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                
+                // Lockout Logic
+                if(data.subscription_status === 'unpaid' || data.subscription_status === 'suspended') {
+                    document.getElementById('lockoutOverlay').classList.add('active');
+                } else {
+                    document.getElementById('lockoutOverlay').classList.remove('active');
+                }
+
+                // Seasonal Themes Logic
+                if(data.seasonal_theme === 'ramadan') document.body.className = 'theme-ramadan';
+                else if(data.seasonal_theme === 'eid') document.body.className = 'theme-eid';
+                else document.body.className = '';
+
+                if(!isAssistantMode) {
+                    document.getElementById('homeName').innerText = data.displayName || 'بدون اسم'; document.getElementById('homeTitle').innerText = data.title || 'المسمى الوظيفي'; document.getElementById('statCust').innerText = data.customersCount || '0'; document.getElementById('statRating').innerText = data.rating || '-';
+                    if(data.profileImage) document.getElementById('homeProfileImg').src = data.profileImage;
+                    document.getElementById('adminName').value = data.displayName || ''; document.getElementById('adminTitle').value = data.title || ''; document.getElementById('adminAbout').value = data.about || '';
+                    // ✅ تحميل الأرقام بالصيغة الصحيحة
+                    if(data.phone1) {
+                        const c1 = countryCodes.find(c => data.phone1.startsWith(c.code));
+                        if(c1) { document.getElementById('phone1Code').value = c1.code; document.getElementById('phone1').value = data.phone1.slice(c1.code.length); }
+                    }
+                    if(data.phone2) {
+                        const c2 = countryCodes.find(c => data.phone2.startsWith(c.code));
+                        if(c2 && document.getElementById('phone2')) { document.getElementById('phone2Code').value = c2.code; document.getElementById('phone2').value = data.phone2.slice(c2.code.length); }
+                    }
+                    // ✅ تحميل InstaPay
+                    if(data.instapay && document.getElementById('instapayToggle')) {
+                        document.getElementById('instapayToggle').checked = true;
+                        document.getElementById('instapaySection').style.display = 'block';
+                        document.getElementById('instapayUser').value = data.instapay;
+                    }
+                    // ✅ تحميل المحفظة
+                    if(data.walletName)   document.getElementById('walletCompany').value = data.walletName;
+                    if(data.walletNumber) document.getElementById('walletPhone').value   = data.walletNumber;
+                    
+
+                    // ✅ قراءة الروابط بالأسماء الصحيحة
+                    const socialReadMap = {
+                        'linkWa':'whatsapp', 'linkFb':'facebook', 'linkInsta':'insta',
+                        'linkYt':'youtube', 'linkTh':'threads', 'linkTg':'telegram',
+                        'linkSn':'snapchat', 'linkXt':'x', 'linkLinkedin':'linkedin',
+                        'linkMap':'googleMaps', 'linkReviews':'googleReviews',
+                        'linkTiktok':'tiktok', 'linkTruecaller':'truecaller'
+                    };
+                    socialPlatforms.forEach(p => {
+                        const dbKey = socialReadMap[p.id] || p.id.replace('link','').toLowerCase();
+                        if(document.getElementById(p.id)) document.getElementById(p.id).value = data[dbKey] || '';
+                    });
+                    window.syncBookingUI(data.booking_enabled !== false);
+                    
+                    window.officialHolidays = data.officialHolidays ||[]; renderHolidays();
+
+                    let advSched = data.advancedSchedules || {};
+                    daysMap.forEach(day => {
+                        const isWorking = advSched[day.id] ? !advSched[day.id].isOff : !(data.offDays ||[]).includes(day.id);
+                        document.getElementById(`dayOn_${day.id}`).checked = isWorking; window.toggleDayInputs(day.id);
+                        document.getElementById(`dayFrom_${day.id}`).value = advSched[day.id]?.from || "09:00"; document.getElementById(`dayTo_${day.id}`).value = advSched[day.id]?.to || "17:00"; document.getElementById(`dayCap_${day.id}`).value = advSched[day.id]?.capacity || 5;
+                    });
+                    fetchAssistants();
+                }
+            }
+        });
+
+        if (isAssistantMode) {
+            document.querySelectorAll('.nav-item').forEach(n => n.style.display = 'none'); document.querySelector('.nav-item[onclick*="bookingsScreen"]').style.display = 'flex'; document.getElementById('saveBtnBtn').style.display = 'none'; document.querySelector('.b-tab[onclick*="settings"]').style.display = 'none';
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('bookingsScreen').classList.add('active'); document.getElementById('mainNav').style.display = 'flex';
+        } else {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById('homeScreen').classList.add('active'); document.getElementById('mainNav').style.display = 'flex';
+        }
+
+        onSnapshot(query(collection(db, "users", userDocId, "bookings"), orderBy("createdAt", "desc")), snap => { window.allBookings =[]; snap.forEach(d => { let b = d.data(); b.id = d.id; window.allBookings.push(b); }); window.filterBookings(); });
+    }
+
+    window.toggleInstapaySection = () => {
+        const s = document.getElementById('instapaySection');
+        if(s) s.style.display = document.getElementById('instapayToggle').checked ? 'block' : 'none';
+    };
+
+    window.saveAdminData = async function() {
+        if (isAssistantMode) return;
+        const btn = document.getElementById('saveBtnBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        let newAdvSched = {}, classicOffDays = [];
+        daysMap.forEach(day => {
+            const isWorking = document.getElementById(`dayOn_${day.id}`).checked;
+            if (!isWorking) classicOffDays.push(day.id);
+            newAdvSched[day.id] = { isOff: !isWorking, from: document.getElementById(`dayFrom_${day.id}`).value || "09:00", to: document.getElementById(`dayTo_${day.id}`).value || "17:00", capacity: parseInt(document.getElementById(`dayCap_${day.id}`).value) || 5 };
+        });
+
+        // ✅ الأرقام بدون | (يقرأها كود المستخدم مباشرة)
+        const phone1 = document.getElementById('phone1Code').value + document.getElementById('phone1').value.trim();
+        const p2num  = document.getElementById('phone2')?.value.trim();
+        const phone2 = p2num ? (document.getElementById('phone2Code').value + p2num) : '';
+
+        // ✅ InstaPay بالاسم الصحيح
+        const instapayOn  = document.getElementById('instapayToggle')?.checked;
+        const instapayVal = instapayOn ? (document.getElementById('instapayUser')?.value.trim() || '') : '';
+
+        // ✅ المحفظة بالأسماء الصحيحة
+        const walletCo  = document.getElementById('walletCompany').value;
+        const walletNum = document.getElementById('walletPhone').value.trim();
+
+        const profileData = {
+            displayName:    document.getElementById('adminName').value,
+            title:          document.getElementById('adminTitle').value,
+            about:          document.getElementById('adminAbout').value,
+            phone1,
+            phone2,
+            instapay:       instapayVal,
+            showWallet:     !!(walletCo && walletNum),
+            walletName:     walletCo,
+            walletNumber:   walletNum,
+            // ✅ booking_enabled هو الاسم الصحيح لكود المستخدم
+            booking_enabled: document.getElementById('isBookingActiveToggle').checked,
+            advancedSchedules: newAdvSched,
+            offDays:        classicOffDays,
+            officialHolidays: window.officialHolidays
+        };
+
+        // ✅ الروابط بالأسماء الصحيحة
+        const socialFieldMap = {
+            'linkWa':'whatsapp','linkFb':'facebook','linkInsta':'insta',
+            'linkYt':'youtube','linkTh':'threads','linkTg':'telegram',
+            'linkSn':'snapchat','linkXt':'x','linkLinkedin':'linkedin',
+            'linkMap':'googleMaps','linkReviews':'googleReviews',
+            'linkTiktok':'tiktok','linkTruecaller':'truecaller'
+        };
+        socialPlatforms.forEach(p => {
+            const dbKey = socialFieldMap[p.id] || p.id.replace('link','').toLowerCase();
+            profileData[dbKey] = document.getElementById(p.id)?.value || '';
+        });
+
+        try {
+            await updateDoc(doc(db, "users", userDocId), profileData);
+            btn.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+            showToast('✅ تم الحفظ - سيظهر للمستخدمين فوراً');
+            setTimeout(() => btn.innerHTML = '<i class="fa-solid fa-check-double"></i>', 2000);
+        } catch (e) {
+            console.error(e);
+            showToast("❌ خطأ في الحفظ");
+            btn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        }
+    };
+</script>
+</body>
+</html>
