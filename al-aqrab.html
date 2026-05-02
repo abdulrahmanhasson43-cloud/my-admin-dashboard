@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Al-Aqrab</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ── GLOBALS ── */
+:root{
+  --bg:#F2F2F7;
+  --card:#FFFFFF;
+  --ink:#0A0A0F;
+  --ink2:#6B6B7A;
+  --ink3:#ABABBA;
+  --accent:#0A0A0F;
+  --green:#30D158;
+  --red:#FF453A;
+  --border:rgba(0,0,0,.07);
+  --r-lg:22px;
+  --r-md:16px;
+  --r-sm:12px;
+  --shadow:0 2px 16px rgba(0,0,0,.07);
+  --shadow-lg:0 12px 48px rgba(0,0,0,.14);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#C8C8CC;font-family:'Sora',sans-serif;}
+body{display:flex;align-items:center;justify-content:center;}
+button,input{font-family:'Sora',sans-serif;}
+svg{display:block;flex-shrink:0;}
+
+/* ── PHONE SHELL ── */
+.phone{
+  width:393px;height:852px;
+  background:var(--bg);
+  border-radius:52px;
+  overflow:hidden;position:relative;
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,.22) inset,
+    0 0 0 1px rgba(0,0,0,.18),
+    0 52px 160px rgba(0,0,0,.35);
+}
+
+/* ── SCREENS ── */
+.scr{
+  position:absolute;inset:0;
+  display:none;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;
+  background:var(--bg);
+  scrollbar-width:none;
+}
+.scr::-webkit-scrollbar{display:none;}
+.scr.on{display:flex;}
+.scr.slide-in{animation:slideIn .28s cubic-bezier(.32,.72,0,1) both;}
+.scr.slide-back{animation:slideBack .28s cubic-bezier(.32,.72,0,1) both;}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideBack{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── STATUS BAR ── */
+.sb{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px 0;flex-shrink:0;
+  font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.2px;
+}
+.sb-icons{display:flex;align-items:center;gap:7px;}
+
+/* ── NAV BAR ── */
+.nb{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px 10px;flex-shrink:0;
+}
+.nb-title{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.3px;}
+.ico-btn{
+  width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--card);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 6px rgba(0,0,0,.1);
+  color:var(--ink);
+  transition:transform .12s,box-shadow .12s;
+}
+.ico-btn:active{transform:scale(.9);box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.ico-btn svg{width:16px;height:16px;}
+
+/* ── CARDS ── */
+.card{
+  background:var(--card);border-radius:var(--r-lg);
+  margin:0 16px 10px;padding:18px;
+  box-shadow:var(--shadow);
+}
+.card-label{
+  font-size:10.5px;font-weight:700;color:var(--ink3);
+  letter-spacing:.9px;text-transform:uppercase;margin-bottom:14px;
+}
+
+/* ── TOGGLE ── */
+.tog{position:relative;width:50px;height:30px;flex-shrink:0;cursor:pointer;}
+.tog input{position:absolute;opacity:0;width:0;height:0;}
+.tog-track{position:absolute;inset:0;background:#D1D1D6;border-radius:15px;transition:background .25s;}
+.tog-knob{position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.25);transition:transform .26s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.tog input:checked~.tog-track{background:var(--green);}
+.tog input:checked~.tog-knob{transform:translateX(20px);}
+
+/* ── TAB BAR ── */
+.tabbar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(249,249,249,.94);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-around;
+  padding:10px 0 32px;
+  border-radius:0 0 52px 52px;
+  flex-shrink:0;
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:0 14px;}
+.tab:active{opacity:.5;}
+.tab-bubble{
+  width:54px;height:32px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .18s;
+}
+.tab.on .tab-bubble{background:var(--ink);}
+.tab svg{width:21px;height:21px;stroke:#B0B0BA;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:stroke .18s;}
+.tab.on svg{stroke:#fff;}
+.tab-lbl{font-size:10px;font-weight:600;color:var(--ink3);letter-spacing:.2px;}
+.tab.on .tab-lbl{color:var(--ink);}
+.gh{height:112px;flex-shrink:0;}
+
+/* ── PILL BADGES ── */
+.pill{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.1px;}
+.pill-new{background:#E3F9EC;color:#1A7A3A;}
+.pill-wait{background:#FFF4E3;color:#B85800;}
+.pill-vip{background:#F0E8FF;color:#6B21D1;}
+.pill-done{background:#F0F0F5;color:#888;}
+
+/* ═══════════════════════════════════════
+   SPLASH
+═══════════════════════════════════════ */
+#s-splash{background:#0A0A0F;justify-content:flex-end;overflow:hidden;}
+
+.splash-visual{
+  position:absolute;inset:0;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:60px;
+}
+.splash-grad{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 35%,rgba(10,10,15,.7) 60%,#0A0A0F 80%);
+  z-index:1;
+}
+.splash-circle{
+  width:280px;height:340px;
+  border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+  background:linear-gradient(160deg,#2a2a3a 0%,#18181f 100%);
+  position:relative;overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+}
+.splash-circle::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.06) 0%,transparent 60%),
+    radial-gradient(ellipse at 70% 80%,rgba(255,255,255,.03) 0%,transparent 60%);
+}
+/* Mockup card inside splash */
+.splash-mockup{
+  position:absolute;bottom:28px;left:50%;transform:translateX(-50%);
+  width:168px;height:106px;
+  background:linear-gradient(145deg,#1e1e28,#28283a);
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 20px 50px rgba(0,0,0,.5);
+  padding:14px;display:flex;flex-direction:column;justify-content:flex-end;
+}
+.mock-chip{
+  width:26px;height:19px;border-radius:4px;
+  background:linear-gradient(135deg,#C8A86E,#9A7840);
+  margin-bottom:10px;
+}
+.mock-name{font-size:12px;font-weight:700;color:#fff;letter-spacing:-.1px;}
+.mock-role{font-size:9px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:.2px;text-transform:uppercase;}
+/* floating icons around card */
+.splash-floats{
+  position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:280px;height:340px;pointer-events:none;
+}
+.sf{
+  position:absolute;
+  width:38px;height:38px;border-radius:11px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.09);
+  display:flex;align-items:center;justify-content:center;
+}
+.sf svg{width:18px;height:18px;stroke:rgba(255,255,255,.5);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.sf1{top:22px;left:18px;animation:floatA 4s ease-in-out infinite;}
+.sf2{top:10px;right:22px;animation:floatB 4s ease-in-out infinite .8s;}
+.sf3{bottom:130px;left:8px;animation:floatA 4s ease-in-out infinite 1.6s;}
+.sf4{bottom:120px;right:10px;animation:floatB 4s ease-in-out infinite 2.4s;}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+.splash-content{
+  position:relative;z-index:2;
+  padding:0 28px 44px;
+}
+.splash-dots{display:flex;gap:5px;margin-bottom:20px;}
+.sdot{height:4px;border-radius:2px;background:rgba(255,255,255,.2);transition:all .35s;}
+.sdot.on{width:22px;background:#fff;}
+.sdot:not(.on){width:5px;}
+.splash-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:5px 12px;margin-bottom:16px;
+}
+.splash-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.splash-tag-txt{font-size:11px;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:.4px;text-transform:uppercase;}
+.splash-h{
+  font-family:'Instrument Serif',serif;
+  font-size:38px;line-height:1.15;color:#fff;
+  margin-bottom:14px;letter-spacing:-.5px;
+}
+.splash-h i{font-style:italic;color:rgba(255,255,255,.65);}
+.splash-sub{font-size:14px;color:rgba(255,255,255,.45);line-height:1.7;margin-bottom:32px;font-weight:400;}
+.splash-cta{
+  width:100%;padding:17px;
+  background:#fff;color:#0A0A0F;
+  border:none;border-radius:16px;
+  font-size:15px;font-weight:700;cursor:pointer;
+  letter-spacing:-.2px;
+  transition:transform .12s,opacity .12s;
+}
+.splash-cta:active{transform:scale(.97);}
+.splash-skip{
+  width:100%;padding:14px;background:transparent;
+  color:rgba(255,255,255,.3);border:none;
+  font-size:13px;cursor:pointer;margin-top:6px;
+}
+
+/* ═══════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════ */
+#s-login{background:#fff;justify-content:flex-start;}
+.login-wrap{
+  flex:1;display:flex;flex-direction:column;
+  padding:60px 28px 44px;
+}
+.login-brand{
+  margin-bottom:48px;
+}
+.login-logo-mark{
+  width:52px;height:52px;background:#0A0A0F;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:16px;
+}
+.login-logo-mark svg{width:26px;height:26px;stroke:#fff;fill:none;}
+.login-name{font-family:'Instrument Serif',serif;font-size:28px;color:#0A0A0F;letter-spacing:-.4px;}
+.login-sub{font-size:13px;color:#ABABBA;margin-top:4px;font-weight:400;}
+.fld{margin-bottom:14px;}
+.fld-lbl{font-size:11px;font-weight:700;color:#888;letter-spacing:.6px;text-transform:uppercase;margin-bottom:7px;display:block;}
+.fld-inp{
+  width:100%;padding:15px 16px;
+  background:#F6F6F9;border:1.5px solid transparent;border-radius:14px;
+  font-size:15px;font-weight:500;color:#0A0A0F;outline:none;
+  transition:border-color .2s,background .2s;
+}
+.fld-inp::placeholder{color:#C0C0CC;font-weight:400;}
+.fld-inp:focus{background:#fff;border-color:#0A0A0F;}
+.btn-ink{
+  width:100%;padding:16px;background:#0A0A0F;color:#fff;
+  border:none;border-radius:14px;
+  font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;
+  transition:transform .12s,opacity .12s;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+}
+.btn-ink svg{width:18px;height:18px;stroke:#fff;fill:none;}
+.btn-ink:active{transform:scale(.98);}
+.btn-ghost{
+  width:100%;padding:15px;background:#F6F6F9;color:#0A0A0F;
+  border:none;border-radius:14px;
+  font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s;
+}
+.btn-ghost:hover{background:#EFEFF4;}
+.btn-ghost svg{width:18px;height:18px;}
+.login-alt{font-size:13px;color:#ABABBA;text-align:center;margin-top:28px;cursor:pointer;}
+.login-alt b{color:#0A0A0F;font-weight:700;}
+
+/* ═══════════════════════════════════════
+   PUBLIC PROFILE
+═══════════════════════════════════════ */
+#s-profile{background:var(--bg);}
+.pro-banner-wrap{margin:0 16px 10px;border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);}
+.pro-banner{
+  height:100px;
+  background:linear-gradient(135deg,#0A0A0F 0%,#1e1e2e 100%);
+  position:relative;
+}
+/* Linkd rectangular photo frame */
+.pf-wrap{position:absolute;bottom:-46px;left:18px;}
+.pf{
+  width:80px;height:98px;border-radius:17px;
+  padding:4px;
+  box-shadow:0 8px 28px rgba(0,0,0,.28);
+  transition:background .3s;
+}
+.pf-inner{
+  width:100%;height:100%;border-radius:13px;overflow:hidden;
+  background:linear-gradient(135deg,#c8c8cc,#a0a0a8);
+  display:flex;align-items:center;justify-content:center;
+}
+.pf-inner svg{width:34px;height:34px;stroke:rgba(255,255,255,.7);fill:none;}
+/* Frame color dots */
+.pf-colors{position:absolute;bottom:-36px;right:16px;display:flex;gap:5px;}
+.pfc{
+  width:20px;height:20px;border-radius:50%;cursor:pointer;
+  border:2.5px solid transparent;
+  box-shadow:0 1px 5px rgba(0,0,0,.18);
+  transition:transform .18s,border-color .18s;
+}
+.pfc:hover{transform:scale(1.2);}
+.pfc.on{border-color:#0A0A0F;}
+
+.pro-body{background:#fff;padding:54px 18px 20px;}
+.pro-name{font-size:21px;font-weight:800;color:#0A0A0F;letter-spacing:-.4px;}
+.pro-role{font-size:13px;color:var(--ink3);margin-top:3px;margin-bottom:11px;font-weight:500;}
+.pro-bio{font-size:13px;color:#555;line-height:1.72;margin-bottom:16px;font-weight:400;}
+.stats-row{display:flex;gap:8px;margin-bottom:18px;}
+.stat{flex:1;background:#F6F6F9;border-radius:14px;padding:12px;text-align:center;}
+.stat-n{font-size:19px;font-weight:800;color:#0A0A0F;letter-spacing:-.5px;}
+.stat-l{font-size:10px;color:var(--ink3);margin-top:2px;font-weight:600;letter-spacing:.2px;}
+.row-btns{display:flex;gap:10px;}
+.btn-book{
+  flex:1;padding:14px;background:#0A0A0F;color:#fff;
+  border:none;border-radius:14px;
+  font-size:14px;font-weight:700;cursor:pointer;
+  letter-spacing:-.1px;
+  transition:transform .12s;
+}
+.btn-book:active{transform:scale(.97);}
+.btn-sq{
+  width:46px;height:46px;flex-shrink:0;
+  background:#F6F6F9;border:none;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .15s;
+}
+.btn-sq:hover{background:#EFEFF4;}
+.btn-sq svg{width:19px;height:19px;stroke:#0A0A0F;fill:none;}
+
+/* link rows */
+.lnk{
+  display:flex;align-items:center;gap:13px;
+  padding:12px 0;border-bottom:1px solid #F4F4F8;
+  cursor:pointer;text-decoration:none;color:#0A0A0F;
+  transition:opacity .15s;
+}
+.lnk:last-child{border-bottom:none;padding-bottom:0;}
+.lnk:first-child{padding-top:0;}
+.lnk:active{opacity:.5;}
+.lnk-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lnk-ico svg{width:21px;height:21px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.lnk-body{flex:1;}
+.lnk-name{font-size:14px;font-weight:600;color:#0A0A0F;}
+.lnk-handle{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:400;}
+.lnk-arr{color:#DADAE0;}
+.lnk-arr svg{width:14px;height:14px;stroke:#DADAE0;fill:none;}
+
+/* stars */
+.stars{display:flex;gap:2px;}
+.stars svg{width:16px;height:16px;fill:#FF9F0A;}
+.rat-row{display:flex;align-items:center;gap:16px;}
+.rat-n{font-size:36px;font-weight:800;color:#0A0A0F;letter-spacing:-1px;}
+.rat-detail{}
+.rat-count{font-size:12px;color:var(--ink3);margin-top:3px;font-weight:500;}
+.review-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:14px;padding:14px;background:#F6F6F9;border-radius:14px;
+  font-size:13px;font-weight:700;color:#0A0A0F;text-decoration:none;
+  transition:background .15s;
+}
+.review-btn svg{width:16px;height:16px;fill:#FF9F0A;}
+
+/* booking link box */
+.bl-box{display:flex;align-items:center;gap:10px;background:#F6F6F9;border-radius:13px;padding:13px 15px;}
+.bl-url{flex:1;font-size:12px;color:var(--ink3);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cp-btn{
+  padding:8px 16px;background:#0A0A0F;color:#fff;border:none;border-radius:10px;
+  font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;
+  transition:opacity .15s;
+}
+.cp-btn:active{opacity:.7;}
+
+/* ═══════════════════════════════════════
+   ADMIN HOME
+═══════════════════════════════════════ */
+.home-hero{
+  display:flex;align-items:center;gap:13px;
+  margin:0 16px 10px;padding:16px;
+  background:var(--card);border-radius:var(--r-lg);
+  box-shadow:var(--shadow);
+}
+.h-av{
+  width:54px;height:66px;border-radius:15px;
+  padding:3px;background:#fff;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+  flex-shrink:0;
+}
+.h-av-in{width:100%;height:100%;border-radius:13px;background:linear-gradient(135deg,#d0d0d8,#a8a8b0);display:flex;align-items:center;justify-content:center;}
+.h-av-in svg{width:28px;height:28px;stroke:rgba(255,255,255,.8);fill:none;}
+.h-user{flex:1;}
+.h-wave{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.2px;}
+.h-name{font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-.4px;margin-top:1px;}
+.h-role{font-size:11px;color:var(--ink3);font-weight:500;}
+.h-badge{text-align:right;}
+.h-num{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-1px;}
+.h-lbl{font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:.2px;}
+
+.qgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 16px 10px;}
+.qc{
+  background:var(--card);border-radius:18px;padding:18px;
+  box-shadow:var(--shadow);cursor:pointer;
+  transition:transform .14s,box-shadow .14s;
+}
+.qc:active{transform:scale(.96);box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.qc.dark{background:#0A0A0F;}
+.qc-ico{width:34px;height:34px;border-radius:10px;background:#F6F6F9;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.qc.dark .qc-ico{background:rgba(255,255,255,.08);}
+.qc-ico svg{width:18px;height:18px;stroke:#0A0A0F;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.qc.dark .qc-ico svg{stroke:#fff;}
+.qc-n{font-size:26px;font-weight:800;color:#0A0A0F;letter-spacing:-1px;}
+.qc.dark .qc-n{color:#fff;}
+.qc-l{font-size:12px;color:var(--ink3);font-weight:500;margin-top:2px;}
+
+.li{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid #F4F4F8;cursor:pointer;}
+.li:last-child{border-bottom:none;padding-bottom:0;}
+.li:first-child{padding-top:0;}
+.li:active{opacity:.55;}
+.li-av{width:42px;height:42px;border-radius:12px;background:#F6F6F9;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.li-av svg{width:20px;height:20px;stroke:#ABABBA;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.li-b{flex:1;}
+.li-n{font-size:15px;font-weight:600;color:#0A0A0F;}
+.li-s{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:400;}
+
+/* ═══════════════════════════════════════
+   BOOKINGS
+═══════════════════════════════════════ */
+.seg{
+  display:flex;margin:0 16px 10px;
+  background:var(--card);border-radius:14px;padding:4px;
+  box-shadow:var(--shadow);
+}
+.seg-b{
+  flex:1;padding:9px;border-radius:11px;border:none;
+  font-family:'Sora',sans-serif;font-size:13px;font-weight:600;
+  color:var(--ink3);background:transparent;cursor:pointer;
+  transition:all .2s;
+}
+.seg-b.on{background:#0A0A0F;color:#fff;}
+
+.bk{
+  background:var(--card);margin:0 16px 10px;
+  border-radius:18px;padding:16px;
+  box-shadow:var(--shadow);cursor:pointer;
+  transition:transform .12s;
+}
+.bk:active{transform:scale(.98);}
+.bk-top{display:flex;align-items:center;gap:11px;margin-bottom:12px;}
+.bk-av{width:42px;height:42px;border-radius:13px;background:#F6F6F9;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.bk-av svg{width:20px;height:20px;stroke:#ABABBA;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.bk-info{flex:1;}
+.bk-n{font-size:15px;font-weight:700;color:#0A0A0F;letter-spacing:-.2px;}
+.bk-t{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:500;}
+.bk-meta{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500;}
+.bk-meta svg{width:14px;height:14px;stroke:var(--ink3);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.bk-acts{display:flex;gap:8px;margin-top:13px;}
+.bk-btn{
+  flex:1;padding:11px;border-radius:12px;border:none;
+  font-family:'Sora',sans-serif;font-size:13px;font-weight:700;cursor:pointer;
+  transition:opacity .15s;
+}
+.bk-btn:active{opacity:.7;}
+.bk-ok{background:#0A0A0F;color:#fff;}
+.bk-no{background:#F6F6F9;color:#888;}
+
+/* ═══════════════════════════════════════
+   LINKS
+═══════════════════════════════════════ */
+.dir-card{
+  display:flex;align-items:center;gap:13px;padding:15px 18px;
+  background:var(--card);margin:0 16px 10px;border-radius:18px;
+  box-shadow:var(--shadow);
+}
+.dir-ico{width:38px;height:38px;border-radius:11px;background:#F6F6F9;display:flex;align-items:center;justify-content:center;}
+.dir-ico svg{width:19px;height:19px;stroke:#0A0A0F;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.dir-body{flex:1;}
+.dir-title{font-size:15px;font-weight:700;color:#0A0A0F;}
+.dir-sub{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:400;}
+
+.soc-row{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid #F4F4F8;}
+.soc-row:last-child{border-bottom:none;padding-bottom:0;}
+.soc-row:first-child{padding-top:0;}
+.s-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.s-ico svg{width:20px;height:20px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.s-name{flex:1;font-size:14px;font-weight:600;color:#0A0A0F;}
+
+.rec-row{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid #F4F4F8;cursor:pointer;}
+.rec-row:last-child{border-bottom:none;padding-bottom:0;}
+.rec-row:first-child{padding-top:0;}
+.rec-row:active{opacity:.5;}
+.r-ico{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.r-ico svg{width:20px;height:20px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.r-name{flex:1;font-size:14px;font-weight:600;color:#0A0A0F;}
+.add-btn{
+  width:28px;height:28px;border-radius:50%;
+  background:#F6F6F9;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.add-btn:hover{background:#EDEDF3;}
+.add-btn svg{width:14px;height:14px;stroke:#555;fill:none;stroke-width:2;stroke-linecap:round;}
+
+/* ═══════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════ */
+.set-hero{display:flex;align-items:center;gap:14px;padding:6px 16px 14px;}
+.set-av{width:62px;height:76px;border-radius:18px;padding:3px;background:#fff;box-shadow:0 5px 18px rgba(0,0,0,.15);}
+.set-av-in{width:100%;height:100%;border-radius:15px;background:linear-gradient(135deg,#d0d0d8,#a8a8b0);display:flex;align-items:center;justify-content:center;}
+.set-av-in svg{width:30px;height:30px;stroke:rgba(255,255,255,.8);fill:none;}
+.set-name{font-size:20px;font-weight:800;color:#0A0A0F;letter-spacing:-.4px;}
+.set-role{font-size:13px;color:var(--ink3);font-weight:500;}
+.set-sec{margin:0 16px 10px;}
+.set-lbl{font-size:10.5px;font-weight:700;color:var(--ink3);letter-spacing:.9px;text-transform:uppercase;padding:0 4px 9px;}
+.set-card{background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);}
+.set-row{
+  display:flex;align-items:center;gap:13px;padding:15px 16px;
+  border-bottom:1px solid #F4F4F8;cursor:pointer;
+  transition:background .15s;
+}
+.set-row:last-child{border-bottom:none;}
+.set-row:hover{background:#FAFAFA;}
+.set-row:active{background:#F5F5F8;}
+.set-r-ico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.set-r-ico svg{width:17px;height:17px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.set-r-b{flex:1;}
+.set-r-n{font-size:15px;font-weight:600;color:#0A0A0F;}
+.set-r-s{font-size:12px;color:var(--ink3);margin-top:2px;font-weight:400;}
+.set-chev svg{width:14px;height:14px;stroke:#DADAE0;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.signout{margin:4px 16px 10px;background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);}
+.signout-btn{
+  width:100%;padding:17px;background:transparent;border:none;
+  font-family:'Sora',sans-serif;font-size:15px;font-weight:700;color:var(--red);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:background .15s;
+}
+.signout-btn:hover{background:#FFF2F1;}
+.signout-btn svg{width:18px;height:18px;stroke:var(--red);fill:none;}
+
+/* ═══════════════════════════════════════
+   BOOKING MODAL
+═══════════════════════════════════════ */
+.overlay{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.48);backdrop-filter:blur(6px);
+  display:none;align-items:flex-end;z-index:80;
+}
+.overlay.on{display:flex;animation:ovIn .22s ease;}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.sheet{
+  width:100%;background:#fff;
+  border-radius:28px 28px 52px 52px;
+  padding:12px 22px 48px;
+  animation:sheetUp .36s cubic-bezier(.32,1.2,.6,1);
+}
+@keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sh-handle{width:36px;height:4px;border-radius:2px;background:#E0E0E5;margin:0 auto 22px;}
+.sh-title{font-size:20px;font-weight:800;color:#0A0A0F;text-align:center;margin-bottom:22px;letter-spacing:-.4px;}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+.tc{
+  padding:18px 10px;border-radius:16px;border:2px solid #EBEBF0;background:#fff;
+  cursor:pointer;text-align:center;transition:all .2s;
+}
+.tc.on{border-color:#0A0A0F;background:#0A0A0F;color:#fff;}
+.tc-ico{width:34px;height:34px;border-radius:10px;background:#F6F6F9;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;}
+.tc.on .tc-ico{background:rgba(255,255,255,.12);}
+.tc-ico svg{width:20px;height:20px;fill:none;stroke:#0A0A0F;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;}
+.tc.on .tc-ico svg{stroke:#fff;}
+.tc-name{font-size:12px;font-weight:700;letter-spacing:.1px;}
+.tc-price{font-size:11px;opacity:.55;margin-top:3px;font-weight:500;}
+.sh-cta{
+  width:100%;padding:16px;background:#0A0A0F;color:#fff;border:none;
+  border-radius:16px;font-family:'Sora',sans-serif;font-size:15px;font-weight:700;
+  cursor:pointer;transition:opacity .15s;
+}
+.sh-cta:hover{opacity:.85;}
+.sh-cancel{width:100%;padding:14px;background:transparent;border:none;font-family:'Sora',sans-serif;font-size:14px;color:var(--ink3);cursor:pointer;margin-top:6px;}
+
+/* ── TOAST ── */
+.toast{
+  position:absolute;bottom:104px;left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:#0A0A0F;color:#fff;
+  padding:11px 22px;border-radius:50px;
+  font-size:13px;font-weight:700;
+  opacity:0;pointer-events:none;z-index:99;
+  transition:opacity .28s,transform .32s cubic-bezier(.34,1.56,.64,1);
+  white-space:nowrap;letter-spacing:-.1px;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── color helpers ── */
+.bg-gr{background:#E5F8EE;} .bg-pk{background:#FFE8F2;} .bg-bl{background:#E4EFFF;}
+.bg-gy{background:#F0F0F5;} .bg-rd{background:#FFE8E8;} .bg-yw{background:#FFF8E1;}
+.bg-vl{background:#F2EAFF;} .bg-tl{background:#E3F6F5;} .bg-or{background:#FFF1E4;}
+.st-gr{stroke:#1B7A3E;} .st-pk{stroke:#B52060;} .st-bl{stroke:#1256C2;}
+.st-gy{stroke:#606070;} .st-rd{stroke:#B82020;} .st-yw{stroke:#A06010;}
+.st-vl{stroke:#5B1DB0;} .st-tl{stroke:#0A6B6B;} .st-or{stroke:#B05010;}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ─── SVG SYMBOL DEFS ─── -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <!-- navigation -->
+  <symbol id="i-back"  viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></symbol>
+  <symbol id="i-eye"   viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></symbol>
+  <symbol id="i-save"  viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+  <symbol id="i-dl"    viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-plus"  viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-chev"  viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+  <symbol id="i-lock"  viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></symbol>
+  <!-- tabs -->
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-cal"  viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="i-cog"  viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+  <!-- people -->
+  <symbol id="i-user"  viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <!-- social -->
+  <symbol id="i-wa"  viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+  <symbol id="i-ig"  viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></symbol>
+  <symbol id="i-fb"  viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></symbol>
+  <symbol id="i-tt"  viewBox="0 0 24 24"><path d="M21 2H3v16h5l4 4 4-4h5V2z"/></symbol>
+  <symbol id="i-yt"  viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"/></symbol>
+  <symbol id="i-li"  viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></symbol>
+  <symbol id="i-tw"  viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></symbol>
+  <symbol id="i-sc"  viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></symbol>
+  <symbol id="i-pi"  viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></symbol>
+  <symbol id="i-dr"  viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></symbol>
+  <symbol id="i-bh"  viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 9.5h5.5a2 2 0 0 1 0 4H7V9.5zm0 4h6.5a2 2 0 0 1 0 4H7v-4z"/></symbol>
+  <!-- settings icons -->
+  <symbol id="i-phone"  viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.08 6.08l.91-.91a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-job"    viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></symbol>
+  <symbol id="i-dollar" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+  <symbol id="i-branch" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+  <symbol id="i-sched"  viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+  <symbol id="i-card"   viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol>
+  <symbol id="i-sun"    viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></symbol>
+  <symbol id="i-star"   viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#FF9F0A" stroke="none"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></symbol>
+</svg>
+
+<!-- ══════════════════════
+     SPLASH
+══════════════════════ -->
+<div class="scr on slide-in" id="s-splash">
+  <div class="splash-visual">
+    <div class="splash-grad"></div>
+    <div class="splash-circle">
+      <div class="splash-mockup">
+        <div class="mock-chip"></div>
+        <div class="mock-name">Dr. Ahmed Hassan</div>
+        <div class="mock-role">Specialist Physician</div>
+      </div>
+      <div class="splash-floats">
+        <div class="sf sf1"><svg viewBox="0 0 24 24"><use href="#i-wa"/></svg></div>
+        <div class="sf sf2"><svg viewBox="0 0 24 24"><use href="#i-ig"/></svg></div>
+        <div class="sf sf3"><svg viewBox="0 0 24 24"><use href="#i-li"/></svg></div>
+        <div class="sf sf4"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="splash-content">
+    <div class="splash-dots">
+      <div class="sdot on"></div>
+      <div class="sdot"></div>
+      <div class="sdot"></div>
+    </div>
+    <div class="splash-tag">
+      <div class="splash-tag-dot"></div>
+      <span class="splash-tag-txt">Digital Business Card</span>
+    </div>
+    <div class="splash-h">Smart is your<br><i>Digital Business</i><br>Card</div>
+    <div class="splash-sub">Manage bookings, share your profile and grow your client base — all in one place.</div>
+    <button class="splash-cta" onclick="go('s-login')">Get Started</button>
+    <button class="splash-skip" onclick="go('s-profile')">View sample profile →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     LOGIN
+══════════════════════ -->
+<div class="scr" id="s-login">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 24 24"><use href="#i-link"/></svg>
+      </div>
+      <div class="login-name">Al-Aqrab</div>
+      <div class="login-sub">Professional Booking Platform</div>
+    </div>
+    <div class="fld"><label class="fld-lbl">Email</label><input class="fld-inp" type="email" placeholder="your@email.com"></div>
+    <div class="fld"><label class="fld-lbl">Password</label><input class="fld-inp" type="password" placeholder="••••••••"></div>
+    <button class="btn-ink" onclick="go('s-home')">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-lock"/></svg>
+      Sign In
+    </button>
+    <button class="btn-ghost">
+      <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
+    </button>
+    <div class="login-alt">Don't have an account? <b onclick="go('s-home')">Create free account</b></div>
+    <div class="login-alt" style="margin-top:10px">Preview your public page → <b onclick="go('s-profile')">View profile</b></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     PUBLIC PROFILE
+══════════════════════ -->
+<div class="scr" id="s-profile">
+  <div class="sb">
+    <span>9:41</span>
+    <div class="sb-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3.5" width="3" height="8.5" rx="1" fill="#0A0A0F"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#0A0A0F"/><rect x="9" y=".5" width="3" height="11.5" rx="1" fill="#0A0A0F"/><rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="#DADAE0"/></svg>
+      <svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M1 4.5C5.5 0 18.5 0 23 4.5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M4 8.5c4-4 12-4 16 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5c2.5-2.5 7.5-2.5 9 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#0A0A0F"/></svg>
+      <svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#0A0A0F" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="9" rx="2" fill="#0A0A0F"/><path d="M24 4.5v4a2.5 2.5 0 0 0 0-4z" fill="#0A0A0F" opacity=".4"/></svg>
+    </div>
+  </div>
+  <div class="nb">
+    <button class="ico-btn" onclick="go('s-login','back')"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-back"/></svg></button>
+    <span class="nb-title">Profile</span>
+    <button class="ico-btn" onclick="shareProfile()"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-share"/></svg></button>
+  </div>
+
+  <div class="pro-banner-wrap">
+    <div class="pro-banner">
+      <div class="pf-wrap">
+        <div class="pf" id="pf" style="background:#fff;">
+          <div class="pf-inner"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div>
+        </div>
+      </div>
+      <div class="pf-colors">
+        <div class="pfc on"  style="background:#fff;"    data-c="#fff"    onclick="setFrame(this)"></div>
+        <div class="pfc"     style="background:#0A0A0F;" data-c="#0A0A0F" onclick="setFrame(this)"></div>
+        <div class="pfc"     style="background:#C8A86E;" data-c="#C8A86E" onclick="setFrame(this)"></div>
+        <div class="pfc"     style="background:#30D158;" data-c="#30D158" onclick="setFrame(this)"></div>
+        <div class="pfc"     style="background:#007AFF;" data-c="#007AFF" onclick="setFrame(this)"></div>
+      </div>
+    </div>
+    <div class="pro-body">
+      <div class="pro-name">Dr. Ahmed Hassan</div>
+      <div class="pro-role">Specialist Physician · Cairo</div>
+      <div class="pro-bio">Experienced specialist with 10+ years. Book your appointment directly and get the care you deserve.</div>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-n">500+</div><div class="stat-l">Clients</div></div>
+        <div class="stat"><div class="stat-n">4.9</div><div class="stat-l">Rating</div></div>
+        <div class="stat"><div class="stat-n">2015</div><div class="stat-l">Founded</div></div>
+      </div>
+      <div class="row-btns">
+        <button class="btn-book" onclick="document.getElementById('bk-modal').classList.add('on')">Book Appointment</button>
+        <button class="btn-sq" onclick="copyUrl()"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Booking Link</div>
+    <div class="bl-box"><span class="bl-url">al-aqrab.com/#/ahmed-hassan</span><button class="cp-btn" onclick="copyUrl()">Copy</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Social Links</div>
+    <a class="lnk" href="#"><div class="lnk-ico bg-gr"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gr"><use href="#i-wa"/></svg></div><div class="lnk-body"><div class="lnk-name">WhatsApp</div><div class="lnk-handle">+20 100 000 0000</div></div><div class="lnk-arr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></a>
+    <a class="lnk" href="#"><div class="lnk-ico bg-pk"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-pk"><use href="#i-ig"/></svg></div><div class="lnk-body"><div class="lnk-name">Instagram</div><div class="lnk-handle">@ahmed.hassan</div></div><div class="lnk-arr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></a>
+    <a class="lnk" href="#"><div class="lnk-ico bg-bl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-bl"><use href="#i-fb"/></svg></div><div class="lnk-body"><div class="lnk-name">Facebook</div><div class="lnk-handle">fb.com/ahmedhassan</div></div><div class="lnk-arr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></a>
+    <a class="lnk" href="#"><div class="lnk-ico bg-gy"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gy"><use href="#i-tt"/></svg></div><div class="lnk-body"><div class="lnk-name">TikTok</div><div class="lnk-handle">@ahmed.hassan</div></div><div class="lnk-arr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></a>
+    <a class="lnk" href="#"><div class="lnk-ico bg-rd"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-rd"><use href="#i-yt"/></svg></div><div class="lnk-body"><div class="lnk-name">YouTube</div><div class="lnk-handle">youtube.com/channel</div></div><div class="lnk-arr"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></a>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Client Reviews</div>
+    <div class="rat-row">
+      <div class="rat-n">4.9</div>
+      <div class="rat-detail">
+        <div class="stars"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><svg viewBox="0 0 24 24"><use href="#i-star"/></svg><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></div>
+        <div class="rat-count">320 verified reviews</div>
+      </div>
+    </div>
+    <a class="review-btn" href="#"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg>Leave a Review on Google</a>
+  </div>
+  <div class="gh"></div>
+</div>
+
+<!-- ══════════════════════
+     ADMIN HOME
+══════════════════════ -->
+<div class="scr" id="s-home">
+  <div class="sb"><span>9:41</span><div class="sb-icons"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3.5" width="3" height="8.5" rx="1" fill="#0A0A0F"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#0A0A0F"/><rect x="9" y=".5" width="3" height="11.5" rx="1" fill="#0A0A0F"/><rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="#DADAE0"/></svg><svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M1 4.5C5.5 0 18.5 0 23 4.5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M4 8.5c4-4 12-4 16 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5c2.5-2.5 7.5-2.5 9 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#0A0A0F"/></svg><svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#0A0A0F" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="9" rx="2" fill="#0A0A0F"/><path d="M24 4.5v4a2.5 2.5 0 0 0 0-4z" fill="#0A0A0F" opacity=".4"/></svg></div></div>
+  <div class="nb"><span class="nb-title">Home</span><button class="ico-btn" onclick="go('s-profile')"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-eye"/></svg></button></div>
+
+  <div class="home-hero">
+    <div class="h-av"><div class="h-av-in"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div></div>
+    <div class="h-user">
+      <div class="h-wave">Welcome back</div>
+      <div class="h-name">Dr. Ahmed Hassan</div>
+      <div class="h-role">Specialist Physician</div>
+    </div>
+    <div class="h-badge"><div class="h-num">36+</div><div class="h-lbl">Connected</div></div>
+  </div>
+
+  <div class="qgrid">
+    <div class="qc" onclick="go('s-bookings')">
+      <div class="qc-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-cal"/></svg></div>
+      <div class="qc-n">12</div><div class="qc-l">Bookings today</div>
+    </div>
+    <div class="qc dark" onclick="go('s-settings')">
+      <div class="qc-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-users"/></svg></div>
+      <div class="qc-n">500+</div><div class="qc-l">Total clients</div>
+    </div>
+    <div class="qc" onclick="go('s-links')">
+      <div class="qc-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+      <div class="qc-n">5</div><div class="qc-l">Active links</div>
+    </div>
+    <div class="qc" onclick="go('s-settings')">
+      <div class="qc-ico"><svg viewBox="0 0 24 24"><use href="#i-star"/></svg></div>
+      <div class="qc-n">4.9</div><div class="qc-l">Your rating</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Public Link</div>
+    <div class="bl-box"><span class="bl-url">al-aqrab.com/#/ahmed-hassan</span><button class="cp-btn" onclick="copyUrl()">Copy</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Recent Bookings</div>
+    <div class="li" onclick="go('s-bookings')"><div class="li-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="li-b"><div class="li-n">Sara Kamal</div><div class="li-s">New Visit · 10:00 AM</div></div><span class="pill pill-new">New</span></div>
+    <div class="li" onclick="go('s-bookings')"><div class="li-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="li-b"><div class="li-n">Mohamed Ali</div><div class="li-s">Follow-up · 11:30 AM</div></div><span class="pill pill-wait">Pending</span></div>
+    <div class="li" onclick="go('s-bookings')"><div class="li-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="li-b"><div class="li-n">Nour Ibrahim</div><div class="li-s">VIP · 2:00 PM</div></div><span class="pill pill-vip">VIP</span></div>
+  </div>
+  <div class="gh"></div>
+  <div class="tabbar">
+    <div class="tab on"  onclick="go('s-home')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></div><div class="tab-lbl">Home</div></div>
+    <div class="tab"     onclick="go('s-bookings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></div><div class="tab-lbl">Bookings</div></div>
+    <div class="tab"     onclick="go('s-links')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-link"/></svg></div><div class="tab-lbl">Links</div></div>
+    <div class="tab"     onclick="go('s-settings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cog"/></svg></div><div class="tab-lbl">Settings</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     BOOKINGS
+══════════════════════ -->
+<div class="scr" id="s-bookings">
+  <div class="sb"><span>9:41</span><div class="sb-icons"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3.5" width="3" height="8.5" rx="1" fill="#0A0A0F"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#0A0A0F"/><rect x="9" y=".5" width="3" height="11.5" rx="1" fill="#0A0A0F"/><rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="#DADAE0"/></svg><svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M1 4.5C5.5 0 18.5 0 23 4.5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M4 8.5c4-4 12-4 16 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5c2.5-2.5 7.5-2.5 9 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#0A0A0F"/></svg><svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#0A0A0F" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="9" rx="2" fill="#0A0A0F"/><path d="M24 4.5v4a2.5 2.5 0 0 0 0-4z" fill="#0A0A0F" opacity=".4"/></svg></div></div>
+  <div class="nb"><button class="ico-btn" onclick="go('s-home','back')"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-back"/></svg></button><span class="nb-title">Bookings</span><button class="ico-btn"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-dl"/></svg></button></div>
+  <div class="seg"><button class="seg-b on" onclick="setSeg(this)">Incoming</button><button class="seg-b" onclick="setSeg(this)">Waiting</button><button class="seg-b" onclick="setSeg(this)">Archive</button></div>
+
+  <div class="bk">
+    <div class="bk-top"><div class="bk-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="bk-info"><div class="bk-n">Sara Kamal</div><div class="bk-t">Today · 10:00 AM</div></div><span class="pill pill-new">New Visit</span></div>
+    <div class="bk-meta"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg>+20 100 000 0000 &nbsp;·&nbsp; 250 EGP</div>
+    <div class="bk-acts"><button class="bk-btn bk-ok">Confirm</button><button class="bk-btn bk-no">Cancel</button></div>
+  </div>
+  <div class="bk">
+    <div class="bk-top"><div class="bk-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="bk-info"><div class="bk-n">Mohamed Ali</div><div class="bk-t">Today · 11:30 AM</div></div><span class="pill pill-wait">Follow-up</span></div>
+    <div class="bk-meta"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg>+20 111 000 0000 &nbsp;·&nbsp; 150 EGP</div>
+    <div class="bk-acts"><button class="bk-btn bk-ok">Confirm</button><button class="bk-btn bk-no">Cancel</button></div>
+  </div>
+  <div class="bk">
+    <div class="bk-top"><div class="bk-av"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div><div class="bk-info"><div class="bk-n">Nour Ibrahim</div><div class="bk-t">Today · 2:00 PM</div></div><span class="pill pill-vip">VIP</span></div>
+    <div class="bk-meta"><svg viewBox="0 0 24 24"><use href="#i-phone"/></svg>+20 122 000 0000 &nbsp;·&nbsp; 500 EGP</div>
+    <div class="bk-acts"><button class="bk-btn bk-ok">Confirm</button><button class="bk-btn bk-no">Cancel</button></div>
+  </div>
+
+  <div class="gh"></div>
+  <div class="tabbar">
+    <div class="tab"     onclick="go('s-home')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></div><div class="tab-lbl">Home</div></div>
+    <div class="tab on"  onclick="go('s-bookings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></div><div class="tab-lbl">Bookings</div></div>
+    <div class="tab"     onclick="go('s-links')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-link"/></svg></div><div class="tab-lbl">Links</div></div>
+    <div class="tab"     onclick="go('s-settings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cog"/></svg></div><div class="tab-lbl">Settings</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     LINKS
+══════════════════════ -->
+<div class="scr" id="s-links">
+  <div class="sb"><span>9:41</span><div class="sb-icons"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3.5" width="3" height="8.5" rx="1" fill="#0A0A0F"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#0A0A0F"/><rect x="9" y=".5" width="3" height="11.5" rx="1" fill="#0A0A0F"/><rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="#DADAE0"/></svg><svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M1 4.5C5.5 0 18.5 0 23 4.5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M4 8.5c4-4 12-4 16 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5c2.5-2.5 7.5-2.5 9 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#0A0A0F"/></svg><svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#0A0A0F" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="9" rx="2" fill="#0A0A0F"/><path d="M24 4.5v4a2.5 2.5 0 0 0 0-4z" fill="#0A0A0F" opacity=".4"/></svg></div></div>
+  <div class="nb"><button class="ico-btn" onclick="go('s-home','back')"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-back"/></svg></button><span class="nb-title">Social Links</span><button class="ico-btn"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-plus"/></svg></button></div>
+
+  <div class="dir-card">
+    <div class="dir-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-link"/></svg></div>
+    <div class="dir-body"><div class="dir-title">Your Links</div><div class="dir-sub">Enable direct mode</div></div>
+    <label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Active Social Links</div>
+    <div class="soc-row"><div class="s-ico bg-gr"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gr"><use href="#i-wa"/></svg></div><div class="s-name">WhatsApp</div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+    <div class="soc-row"><div class="s-ico bg-bl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-bl"><use href="#i-li"/></svg></div><div class="s-name">LinkedIn</div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+    <div class="soc-row"><div class="s-ico" style="background:#E4F5FF;"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="stroke:#0A7FCC;"><use href="#i-tw"/></svg></div><div class="s-name">Twitter / X</div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+    <div class="soc-row"><div class="s-ico bg-yw"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-yw"><use href="#i-sc"/></svg></div><div class="s-name">Snapchat</div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+    <div class="soc-row" style="border-bottom:none;padding-bottom:0;"><div class="s-ico bg-rd"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-rd"><use href="#i-pi"/></svg></div><div class="s-name">Pinterest</div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Recommends For You</div>
+    <div class="rec-row"><div class="r-ico bg-pk"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-pk"><use href="#i-ig"/></svg></div><div class="r-name">Instagram</div><button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><use href="#i-plus"/></svg></button></div>
+    <div class="rec-row"><div class="r-ico bg-gy"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gy"><use href="#i-tt"/></svg></div><div class="r-name">TikTok</div><button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><use href="#i-plus"/></svg></button></div>
+    <div class="rec-row"><div class="r-ico bg-or"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-or"><use href="#i-dr"/></svg></div><div class="r-name">Dribbble</div><button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><use href="#i-plus"/></svg></button></div>
+    <div class="rec-row" style="border-bottom:none;padding-bottom:0;"><div class="r-ico bg-bl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-bl"><use href="#i-bh"/></svg></div><div class="r-name">Behance</div><button class="add-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><use href="#i-plus"/></svg></button></div>
+  </div>
+
+  <div class="gh"></div>
+  <div class="tabbar">
+    <div class="tab"     onclick="go('s-home')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></div><div class="tab-lbl">Home</div></div>
+    <div class="tab"     onclick="go('s-bookings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></div><div class="tab-lbl">Bookings</div></div>
+    <div class="tab on"  onclick="go('s-links')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-link"/></svg></div><div class="tab-lbl">Links</div></div>
+    <div class="tab"     onclick="go('s-settings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cog"/></svg></div><div class="tab-lbl">Settings</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     SETTINGS
+══════════════════════ -->
+<div class="scr" id="s-settings">
+  <div class="sb"><span>9:41</span><div class="sb-icons"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="3.5" width="3" height="8.5" rx="1" fill="#0A0A0F"/><rect x="4.5" y="2" width="3" height="10" rx="1" fill="#0A0A0F"/><rect x="9" y=".5" width="3" height="11.5" rx="1" fill="#0A0A0F"/><rect x="13.5" y=".5" width="3" height="11.5" rx="1" fill="#DADAE0"/></svg><svg width="16" height="12" viewBox="0 0 24 18" fill="none"><path d="M1 4.5C5.5 0 18.5 0 23 4.5" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M4 8.5c4-4 12-4 16 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><path d="M7.5 12.5c2.5-2.5 7.5-2.5 9 0" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="#0A0A0F"/></svg><svg width="26" height="13" viewBox="0 0 26 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.5" stroke="#0A0A0F" stroke-opacity=".35"/><rect x="2" y="2" width="17" height="9" rx="2" fill="#0A0A0F"/><path d="M24 4.5v4a2.5 2.5 0 0 0 0-4z" fill="#0A0A0F" opacity=".4"/></svg></div></div>
+  <div class="nb"><button class="ico-btn" onclick="go('s-home','back')"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-back"/></svg></button><span class="nb-title">Settings</span><button class="ico-btn"><svg width="16" height="16" fill="none" stroke="#0A0A0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><use href="#i-save"/></svg></button></div>
+
+  <div class="set-hero">
+    <div class="set-av"><div class="set-av-in"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-user"/></svg></div></div>
+    <div><div class="set-name">Dr. Ahmed Hassan</div><div class="set-role">Specialist Physician</div></div>
+  </div>
+
+  <div class="set-sec">
+    <div class="set-lbl">Personal Info</div>
+    <div class="set-card">
+      <div class="set-row"><div class="set-r-ico bg-bl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-bl"><use href="#i-user"/></svg></div><div class="set-r-b"><div class="set-r-n">Full Name</div><div class="set-r-s">Dr. Ahmed Hassan</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-or"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-or"><use href="#i-job"/></svg></div><div class="set-r-b"><div class="set-r-n">Job Title</div><div class="set-r-s">Specialist Physician</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-gr"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gr"><use href="#i-phone"/></svg></div><div class="set-r-b"><div class="set-r-n">Phone Numbers</div><div class="set-r-s">+20 100 000 0000</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+    </div>
+  </div>
+
+  <div class="set-sec">
+    <div class="set-lbl">Booking Settings</div>
+    <div class="set-card">
+      <div class="set-row"><div class="set-r-ico bg-yw"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-yw"><use href="#i-dollar"/></svg></div><div class="set-r-b"><div class="set-r-n">Prices</div><div class="set-r-s">New: 250 · Follow-up: 150 · VIP: 500</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-vl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-vl"><use href="#i-branch"/></svg></div><div class="set-r-b"><div class="set-r-n">Branches</div><div class="set-r-s">1 active branch</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-tl"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-tl"><use href="#i-sched"/></svg></div><div class="set-r-b"><div class="set-r-n">Schedule</div><div class="set-r-s">Sun–Thu · 9 AM – 5 PM</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-pk"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-pk"><use href="#i-users"/></svg></div><div class="set-r-b"><div class="set-r-n">Assistants</div><div class="set-r-s">Manage team access</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+    </div>
+  </div>
+
+  <div class="set-sec">
+    <div class="set-lbl">Account</div>
+    <div class="set-card">
+      <div class="set-row"><div class="set-r-ico bg-gy"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gy"><use href="#i-card"/></svg></div><div class="set-r-b"><div class="set-r-n">Subscription</div><div class="set-r-s" style="color:var(--red);">Expired — Renew now</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+      <div class="set-row"><div class="set-r-ico bg-gy"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="st-gy"><use href="#i-sun"/></svg></div><div class="set-r-b"><div class="set-r-n">Appearance</div><div class="set-r-s">Light mode</div></div><label class="tog" style="flex-shrink:0;"><input type="checkbox"><div class="tog-track"></div><div class="tog-knob"></div></label></div>
+      <div class="set-row"><div class="set-r-ico" style="background:#FFF8E8;"><svg viewBox="0 0 24 24" width="17" height="17"><use href="#i-star"/></svg></div><div class="set-r-b"><div class="set-r-n">Google Reviews</div><div class="set-r-s">Add your review link</div></div><div class="set-chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-chev"/></svg></div></div>
+    </div>
+  </div>
+
+  <div class="signout">
+    <button class="signout-btn" onclick="go('s-login','back')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-logout"/></svg>
+      Sign Out
+    </button>
+  </div>
+
+  <div class="gh"></div>
+  <div class="tabbar">
+    <div class="tab"     onclick="go('s-home')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-home"/></svg></div><div class="tab-lbl">Home</div></div>
+    <div class="tab"     onclick="go('s-bookings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></div><div class="tab-lbl">Bookings</div></div>
+    <div class="tab"     onclick="go('s-links')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-link"/></svg></div><div class="tab-lbl">Links</div></div>
+    <div class="tab on"  onclick="go('s-settings')"><div class="tab-bubble"><svg viewBox="0 0 24 24"><use href="#i-cog"/></svg></div><div class="tab-lbl">Settings</div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════
+     BOOKING MODAL
+══════════════════════ -->
+<div class="overlay" id="bk-modal" onclick="closeModal(event)">
+  <div class="sheet">
+    <div class="sh-handle"></div>
+    <div class="sh-title">Choose Appointment Type</div>
+    <div class="type-grid">
+      <div class="tc on" onclick="pickType(this)">
+        <div class="tc-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-plus"/></svg></div>
+        <div class="tc-name">New Visit</div><div class="tc-price">250 EGP</div>
+      </div>
+      <div class="tc" onclick="pickType(this)">
+        <div class="tc-ico"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><use href="#i-refresh"/></svg></div>
+        <div class="tc-name">Follow-up</div><div class="tc-price">150 EGP</div>
+      </div>
+      <div class="tc" onclick="pickType(this)">
+        <div class="tc-ico"><svg viewBox="0 0 24 24" width="20" height="20"><use href="#i-star"/></svg></div>
+        <div class="tc-name">VIP</div><div class="tc-price">500 EGP</div>
+      </div>
+    </div>
+    <button class="sh-cta">Confirm via WhatsApp →</button>
+    <button class="sh-cancel" onclick="document.getElementById('bk-modal').classList.remove('on')">Cancel</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Link copied to clipboard</div>
+
+<script>
+// ── ROUTING ──
+function go(id, dir) {
+  const prev = document.querySelector('.scr.on');
+  const next = document.getElementById(id);
+  if (!next || next === prev) return;
+  prev.classList.remove('on');
+  next.classList.remove('slide-in','slide-back');
+  void next.offsetWidth;
+  next.classList.add('on', dir === 'back' ? 'slide-back' : 'slide-in');
+  next.scrollTop = 0;
+}
+
+// ── SEGMENT CONTROL ──
+function setSeg(btn) {
+  btn.closest('.seg').querySelectorAll('.seg-b').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// ── PHOTO FRAME COLOR ──
+function setFrame(dot) {
+  document.querySelectorAll('.pfc').forEach(d => d.classList.remove('on'));
+  dot.classList.add('on');
+  document.getElementById('pf').style.background = dot.dataset.c;
+}
+
+// ── COPY URL ──
+function copyUrl() {
+  const url = 'https://al-aqrab.com/#/ahmed-hassan';
+  navigator.clipboard?.writeText(url).catch(() => {});
+  const t = document.getElementById('toast');
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+// ── SHARE ──
+function shareProfile() {
+  if (navigator.share) {
+    navigator.share({ title: 'Dr. Ahmed Hassan', url: 'https://al-aqrab.com/#/ahmed-hassan' });
+  } else { copyUrl(); }
+}
+
+// ── MODAL ──
+function closeModal(e) {
+  if (e.target === document.getElementById('bk-modal'))
+    document.getElementById('bk-modal').classList.remove('on');
+}
+function pickType(el) {
+  el.closest('.type-grid').querySelectorAll('.tc').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+}
+
+// ── SPLASH DOTS ANIMATION ──
+let dotIdx = 0;
+setInterval(() => {
+  dotIdx = (dotIdx + 1) % 3;
+  document.querySelectorAll('.sdot').forEach((d, i) => d.classList.toggle('on', i === dotIdx));
+}, 2000);
+</script>
+</div>
+</body>
+</html>
