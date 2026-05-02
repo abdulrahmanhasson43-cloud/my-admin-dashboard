@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FlowLink — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+<style>
+/* ═══════════════════════════════════════════
+   FlowLink Admin Dashboard v1
+   Inspired by Lynku.id — Clean & Professional
+═══════════════════════════════════════════ */
+:root {
+  --bg:       #f5f6fa;
+  --surface:  #ffffff;
+  --border:   #e8eaed;
+  --border2:  #d1d5db;
+  --text-1:   #111827;
+  --text-2:   #374151;
+  --text-3:   #6b7280;
+  --text-4:   #9ca3af;
+  --accent:   #6c47ff;
+  --accent-l: #8b69ff;
+  --accent-bg:#f0ecff;
+  --accent-b: #ddd6fe;
+  --success:  #10b981;
+  --danger:   #ef4444;
+  --warn:     #f59e0b;
+  --font:     'Plus Jakarta Sans', sans-serif;
+  --mono:     'JetBrains Mono', monospace;
+  --sh:       0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --sh2:      0 4px 16px rgba(0,0,0,0.10);
+  --r:        12px;
+  --r-sm:     8px;
+  --r-lg:     16px;
+  --t:        0.18s ease;
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; font-family:var(--font); background:var(--bg); color:var(--text-1); overflow:hidden; }
+button { font-family:var(--font); cursor:pointer; border:none; }
+input,select,textarea { font-family:var(--font); }
+a { text-decoration:none; color:inherit; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
+
+/* ═══ LAYOUT ═══ */
+.layout { display:flex; height:100vh; overflow:hidden; }
+
+/* ═══ SIDEBAR ═══ */
+.sidebar {
+  width:220px; flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  overflow-y:auto; overflow-x:hidden;
+  transition:width var(--t);
+}
+.sb-logo {
+  padding:20px 20px 16px;
+  display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.sb-logo-mark {
+  width:32px; height:32px; border-radius:8px;
+  background:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:16px; font-weight:800; flex-shrink:0;
+}
+.sb-logo-text { font-size:17px; font-weight:800; color:var(--text-1); }
+.sb-logo-text span { color:var(--accent); }
+
+.sb-section { padding:12px 12px 4px; }
+.sb-section-lbl {
+  font-size:10px; font-weight:700; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--text-4);
+  padding:0 8px; margin-bottom:4px;
+}
+.sb-item {
+  display:flex; align-items:center; gap:10px;
+  padding:9px 12px; border-radius:var(--r-sm);
+  font-size:13.5px; font-weight:500; color:var(--text-2);
+  cursor:pointer; transition:all var(--t);
+  margin-bottom:1px;
+}
+.sb-item i { width:16px; text-align:center; font-size:13px; color:var(--text-3); flex-shrink:0; }
+.sb-item:hover { background:var(--bg); color:var(--text-1); }
+.sb-item:hover i { color:var(--text-2); }
+.sb-item.active { background:var(--accent-bg); color:var(--accent); font-weight:600; }
+.sb-item.active i { color:var(--accent); }
+.sb-badge { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:20px; }
+
+.sb-user {
+  margin-top:auto; padding:12px;
+  border-top:1px solid var(--border); flex-shrink:0;
+}
+.sb-user-card {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px; border-radius:var(--r-sm);
+  background:var(--bg); cursor:pointer;
+  transition:background var(--t);
+}
+.sb-user-card:hover { background:var(--border); }
+.sb-avatar {
+  width:32px; height:32px; border-radius:50%;
+  background:var(--accent-bg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; color:var(--accent); flex-shrink:0;
+  overflow:hidden;
+}
+.sb-avatar img { width:100%; height:100%; object-fit:cover; }
+.sb-user-info { flex:1; min-width:0; }
+.sb-user-name { font-size:13px; font-weight:600; color:var(--text-1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-user-role { font-size:11px; color:var(--text-3); }
+
+/* ═══ MAIN ═══ */
+.main {
+  flex:1; display:flex; flex-direction:column;
+  overflow:hidden; min-width:0;
+}
+
+/* Top bar */
+.topbar {
+  height:56px; flex-shrink:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center;
+  padding:0 24px; gap:16px;
+}
+.topbar-title { font-size:18px; font-weight:800; color:var(--text-1); flex:1; }
+.topbar-search {
+  display:flex; align-items:center; gap:8px;
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:7px 12px;
+  width:220px;
+}
+.topbar-search input {
+  background:transparent; border:none; outline:none;
+  font-size:13px; color:var(--text-1); width:100%;
+}
+.topbar-search i { color:var(--text-4); font-size:13px; }
+.topbar-btn {
+  width:36px; height:36px; border-radius:var(--r-sm);
+  background:var(--bg); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-2); font-size:15px;
+  cursor:pointer; transition:all var(--t); position:relative;
+}
+.topbar-btn:hover { background:var(--border); }
+.notif-dot {
+  position:absolute; top:6px; right:6px;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--danger); border:1.5px solid var(--surface);
+}
+.preview-btn {
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px; border-radius:var(--r-sm);
+  background:var(--accent); color:#fff;
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:all var(--t);
+}
+.preview-btn:hover { background:var(--accent-l); }
+.preview-btn i { font-size:12px; }
+
+/* ═══ CONTENT AREA ═══ */
+.content-wrap {
+  flex:1; display:flex; overflow:hidden; gap:0;
+}
+
+/* Main panel */
+.panel-main {
+  flex:1; overflow-y:auto; padding:24px;
+  min-width:0;
+}
+
+/* Profile header card */
+.profile-header {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-lg); overflow:hidden;
+  margin-bottom:20px; box-shadow:var(--sh);
+}
+.cover-area {
+  height:120px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+  position:relative; overflow:hidden; cursor:pointer;
+}
+.cover-area img { width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 0.4s; }
+.cover-area img.loaded { opacity:1; }
+.cover-edit-btn {
+  position:absolute; bottom:8px; right:10px;
+  background:rgba(0,0,0,0.55); color:#fff;
+  border:none; border-radius:6px; padding:5px 10px;
+  font-size:11px; font-weight:600; cursor:pointer;
+  display:flex; align-items:center; gap:5px;
+  transition:background var(--t);
+}
+.cover-edit-btn:hover { background:rgba(0,0,0,0.75); }
+
+.profile-info-row {
+  display:flex; align-items:flex-end; gap:16px;
+  padding:0 20px 16px; margin-top:-28px;
+}
+.avatar-wrap { position:relative; flex-shrink:0; }
+.avatar-circle {
+  width:64px; height:64px; border-radius:50%;
+  border:3px solid var(--surface);
+  background:var(--accent-bg);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:800; color:var(--accent);
+  overflow:hidden; box-shadow:var(--sh2);
+}
+.avatar-circle img { width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity 0.4s; }
+.avatar-circle img.loaded { opacity:1; }
+.avatar-edit {
+  position:absolute; bottom:0; right:0;
+  width:20px; height:20px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; color:#fff; font-size:9px;
+}
+.profile-meta { flex:1; padding-top:28px; }
+.profile-name-display { font-size:18px; font-weight:800; color:var(--text-1); }
+.profile-title-display { font-size:13px; color:var(--text-3); margin-top:2px; }
+.profile-link-row {
+  display:flex; align-items:center; gap:8px;
+  margin-top:8px; flex-wrap:wrap;
+}
+.profile-url {
+  display:flex; align-items:center; gap:7px;
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-sm); padding:6px 12px;
+  font-size:12px; color:var(--text-2);
+}
+.profile-url i { color:var(--text-4); font-size:11px; }
+.share-btn {
+  display:flex; align-items:center; gap:6px;
+  background:var(--accent); color:#fff;
+  border-radius:var(--r-sm); padding:6px 12px;
+  font-size:12px; font-weight:600; cursor:pointer;
+  transition:background var(--t);
+}
+.share-btn:hover { background:var(--accent-l); }
+
+/* ═══ TABS ═══ */
+.dash-tabs {
+  display:flex; gap:0; border-bottom:2px solid var(--border);
+  margin-bottom:20px; background:var(--surface);
+  border-radius:var(--r-lg) var(--r-lg) 0 0;
+  padding:0 20px; border:1px solid var(--border);
+  border-bottom:none; box-shadow:var(--sh);
+}
+.dtab {
+  padding:14px 16px; font-size:13.5px; font-weight:600;
+  color:var(--text-3); cursor:pointer; border-bottom:2px solid transparent;
+  margin-bottom:-1px; transition:all var(--t); white-space:nowrap;
+}
+.dtab:hover { color:var(--text-1); }
+.dtab.active { color:var(--accent); border-bottom-color:var(--accent); }
+
+/* ═══ SECTION CARD ═══ */
+.sec-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-lg); margin-bottom:16px;
+  box-shadow:var(--sh); overflow:hidden;
+}
+.sec-card-hd {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+}
+.sec-card-title {
+  font-size:14px; font-weight:700; color:var(--text-1);
+  display:flex; align-items:center; gap:8px;
+}
+.sec-card-title i { color:var(--accent); font-size:13px; }
+.sec-card-body { padding:20px; }
+
+/* ═══ FORM ELEMENTS ═══ */
+.f-group { margin-bottom:16px; }
+.f-label {
+  display:block; font-size:12px; font-weight:700;
+  letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--text-3); margin-bottom:6px;
+}
+.f-input, .f-select, .f-textarea {
+  width:100%; padding:10px 14px;
+  background:var(--bg); border:1px solid var(--border);
+  border-radius:var(--r-sm); font-size:14px; color:var(--text-1);
+  outline:none; transition:border-color var(--t);
+  font-family:var(--font);
+}
+.f-input:focus, .f-select:focus, .f-textarea:focus { border-color:var(--accent); background:#fff; }
+.f-textarea { resize:vertical; min-height:80px; line-height:1.6; }
+.f-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.f-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+
+/* Toggle switch */
+.toggle-row {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 0; border-bottom:1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom:none; padding-bottom:0; }
+.toggle-info { flex:1; }
+.toggle-label { font-size:14px; font-weight:600; color:var(--text-1); }
+.toggle-desc { font-size:12px; color:var(--text-3); margin-top:2px; }
+.toggle {
+  position:relative; width:40px; height:22px; flex-shrink:0;
+  cursor:pointer; margin-left:16px;
+}
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-slider {
+  position:absolute; inset:0; border-radius:22px;
+  background:var(--border2); transition:background var(--t);
+}
+.toggle-slider::before {
+  content:''; position:absolute;
+  width:16px; height:16px; border-radius:50%;
+  left:3px; top:3px;
+  background:#fff; transition:transform var(--t);
+  box-shadow:0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle input:checked + .toggle-slider { background:var(--accent); }
+.toggle input:checked + .toggle-slider::before { transform:translateX(18px); }
+
+/* ═══ LINK BLOCK ITEM ═══ */
+.link-block {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; border-radius:var(--r-sm);
+  background:var(--bg); border:1px solid var(--border);
+  margin-bottom:8px; transition:all var(--t);
+}
+.link-block:hover { border-color:var(--border2); box-shadow:var(--sh); }
+.lb-drag { color:var(--text-4); cursor:grab; font-size:14px; flex-shrink:0; }
+.lb-icon {
+  width:36px; height:36px; border-radius:var(--r-sm);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; flex-shrink:0;
+}
+.lb-info { flex:1; min-width:0; }
+.lb-title { font-size:14px; font-weight:600; color:var(--text-1); }
+.lb-url { font-size:12px; color:var(--text-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+.lb-badge { padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; background:var(--warn); color:#fff; }
+.lb-actions { display:flex; gap:4px; flex-shrink:0; }
+.lb-btn {
+  width:30px; height:30px; border-radius:var(--r-sm);
+  background:var(--surface); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-3); font-size:12px; cursor:pointer;
+  transition:all var(--t);
+}
+.lb-btn:hover { background:var(--bg); color:var(--text-1); }
+.lb-btn.danger:hover { background:#fef2f2; border-color:#fecaca; color:var(--danger); }
+
+/* Add block button */
+.add-block-btn {
+  width:100%; padding:12px;
+  background:var(--accent-bg); border:2px dashed var(--accent-b);
+  border-radius:var(--r-sm); color:var(--accent);
+  font-size:14px; font-weight:700; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  transition:all var(--t);
+}
+.add-block-btn:hover { background:var(--accent-b); }
+
+/* ═══ THEME PICKER ═══ */
+.theme-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+.theme-swatch {
+  border-radius:var(--r-sm); overflow:hidden;
+  border:2px solid var(--border);
+  cursor:pointer; transition:all var(--t);
+  aspect-ratio:2/1.2; position:relative;
+}
+.theme-swatch:hover { border-color:var(--accent); transform:scale(1.03); }
+.theme-swatch.active { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent-b); }
+.theme-swatch .ts-top { height:60%; }
+.theme-swatch .ts-bot { height:40%; display:flex; align-items:center; padding:0 6px; }
+.theme-swatch .ts-name { font-size:9px; font-weight:700; }
+.theme-swatch .ts-check {
+  position:absolute; top:4px; right:4px;
+  width:16px; height:16px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  display:none; align-items:center; justify-content:center; font-size:9px;
+}
+.theme-swatch.active .ts-check { display:flex; }
+
+/* ═══ SAVE BAR ═══ */
+.save-bar {
+  display:none; position:sticky; bottom:0; z-index:10;
+  background:var(--surface); border-top:1px solid var(--border);
+  padding:12px 24px; margin-top:20px;
+  display:flex; align-items:center; justify-content:space-between;
+  box-shadow:0 -4px 16px rgba(0,0,0,0.07);
+}
+.save-bar-info { font-size:13px; color:var(--text-2); }
+.save-bar-info i { color:var(--warn); margin-right:6px; }
+.save-btns { display:flex; gap:10px; }
+.btn-outline {
+  padding:9px 18px; border-radius:var(--r-sm);
+  background:transparent; border:1px solid var(--border2);
+  color:var(--text-2); font-size:13px; font-weight:600; cursor:pointer;
+  transition:all var(--t);
+}
+.btn-outline:hover { background:var(--bg); }
+.btn-primary {
+  padding:9px 20px; border-radius:var(--r-sm);
+  background:var(--accent); color:#fff;
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:all var(--t); display:flex; align-items:center; gap:7px;
+}
+.btn-primary:hover { background:var(--accent-l); }
+.btn-primary.saving { opacity:0.7; pointer-events:none; }
+
+/* ═══ PREVIEW PANEL ═══ */
+.preview-panel {
+  width:300px; flex-shrink:0;
+  background:var(--surface); border-left:1px solid var(--border);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.preview-hd {
+  padding:14px 16px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between; flex-shrink:0;
+}
+.preview-hd-title { font-size:13px; font-weight:700; color:var(--text-1); }
+.preview-more { color:var(--text-3); font-size:16px; cursor:pointer; }
+
+.phone-frame {
+  flex:1; overflow:hidden;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:20px 20px 0; background:var(--bg);
+}
+.phone-shell {
+  width:200px; flex-shrink:0;
+  background:#1a1a1a;
+  border-radius:28px;
+  padding:8px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.05);
+}
+.phone-inner {
+  border-radius:22px; overflow:hidden;
+  height:380px; position:relative;
+  background:#f5f5f5;
+}
+.phone-notch {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:70px; height:22px;
+  background:#1a1a1a; border-radius:0 0 16px 16px; z-index:10;
+}
+.phone-screen {
+  width:100%; height:100%; overflow:hidden; position:relative;
+}
+.phone-screen iframe {
+  width:420px; height:900px;
+  border:none; transform:scale(0.476);
+  transform-origin:top left;
+  pointer-events:none;
+}
+
+/* ═══ STAT CARDS ═══ */
+.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+.stat-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-lg); padding:16px 20px;
+  box-shadow:var(--sh);
+}
+.stat-num { font-size:26px; font-weight:800; color:var(--text-1); }
+.stat-lbl { font-size:12px; color:var(--text-3); margin-top:3px; font-weight:500; }
+.stat-badge { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:600; margin-top:8px; }
+.stat-badge.up { color:var(--success); }
+.stat-badge.dn { color:var(--danger); }
+
+/* ═══ TOAST ═══ */
+#toast {
+  position:fixed; bottom:24px; right:24px; z-index:9999;
+  background:var(--text-1); color:#fff;
+  padding:12px 18px; border-radius:var(--r);
+  font-size:13px; font-weight:600;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:var(--sh2);
+  transform:translateY(80px); opacity:0;
+  transition:all 0.3s cubic-bezier(0.2,1,0.4,1);
+  pointer-events:none;
+}
+#toast.show { transform:translateY(0); opacity:1; }
+#toast.success { background:var(--success); }
+#toast.error { background:var(--danger); }
+
+/* ═══ MODAL ═══ */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.45);
+  z-index:8000; display:none; align-items:center; justify-content:center;
+  backdrop-filter:blur(4px); padding:20px;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:var(--surface); border-radius:var(--r-lg);
+  width:100%; max-width:480px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.20);
+  animation:mIn 0.24s cubic-bezier(0.2,1,0.4,1) both;
+}
+@keyframes mIn { from{transform:scale(0.92);opacity:0} to{transform:scale(1);opacity:1} }
+.modal-hd {
+  padding:18px 22px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-title { font-size:16px; font-weight:800; color:var(--text-1); }
+.modal-close {
+  width:28px; height:28px; border-radius:var(--r-sm);
+  background:var(--bg); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-3); font-size:13px; transition:all var(--t);
+}
+.modal-close:hover { background:var(--border); }
+.modal-body { padding:22px; }
+.modal-ft { padding:0 22px 20px; display:flex; justify-content:flex-end; gap:10px; }
+
+/* ═══ LOADING ═══ */
+.skel {
+  background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);
+  background-size:200% 100%; animation:sk 1.4s linear infinite; border-radius:8px;
+}
+@keyframes sk { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+#loadingScreen {
+  position:fixed; inset:0; background:var(--surface);
+  z-index:9999; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:16px;
+}
+.loader-logo { font-size:28px; font-weight:800; }
+.loader-logo span { color:var(--accent); }
+.loader-bar { width:180px; height:3px; background:var(--border); border-radius:3px; overflow:hidden; }
+.loader-bar-fill { height:100%; background:var(--accent); border-radius:3px; animation:ldBar 1.2s ease-in-out infinite alternate; }
+@keyframes ldBar { 0%{width:5%} 100%{width:100%} }
+.loader-txt { font-size:13px; color:var(--text-3); }
+
+/* ═══ TABS CONTENT ═══ */
+.tab-pane { display:none; }
+.tab-pane.active { display:block; }
+
+/* Phone input group */
+.phone-input-group { display:grid; gap:8px; }
+.phone-row { display:flex; align-items:center; gap:8px; }
+.phone-row .f-input { flex:1; }
+.phone-row-rm { width:32px; height:38px; background:var(--bg); border:1px solid var(--border); border-radius:var(--r-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--danger); font-size:13px; transition:all var(--t); flex-shrink:0; }
+.phone-row-rm:hover { background:#fef2f2; border-color:#fecaca; }
+
+/* Color accent picker */
+.color-grid { display:flex; gap:8px; flex-wrap:wrap; }
+.color-swatch {
+  width:28px; height:28px; border-radius:50%;
+  cursor:pointer; transition:transform var(--t);
+  border:2px solid transparent;
+}
+.color-swatch:hover { transform:scale(1.15); }
+.color-swatch.selected { border-color:var(--text-1); }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loadingScreen">
+  <div class="loader-logo">Flow<span>Link</span></div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-txt">Loading your dashboard...</div>
+</div>
+
+<!-- Toast -->
+<div id="toast"><i class="fa-solid fa-check" id="toastIcon"></i> <span id="toastMsg">Saved!</span></div>
+
+<!-- Add Link Modal -->
+<div class="modal-overlay" id="addLinkModal">
+  <div class="modal-box">
+    <div class="modal-hd">
+      <span class="modal-title">Add New Link</span>
+      <button class="modal-close" onclick="closeModal('addLinkModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="f-group">
+        <label class="f-label">Platform</label>
+        <select class="f-select" id="newLinkPlatform" onchange="updateNewLinkIcon()">
+          <option value="whatsapp">WhatsApp</option>
+          <option value="facebook">Facebook</option>
+          <option value="insta">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="youtube">YouTube</option>
+          <option value="snapchat">Snapchat</option>
+          <option value="x">X (Twitter)</option>
+          <option value="linkedin">LinkedIn</option>
+          <option value="threads">Threads</option>
+          <option value="truecaller">Truecaller</option>
+          <option value="googleReviews">Google Reviews</option>
+          <option value="googleMaps">Google Maps</option>
+        </select>
+      </div>
+      <div class="f-group">
+        <label class="f-label">URL or Username</label>
+        <input type="url" class="f-input" id="newLinkUrl" placeholder="https://...">
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-outline" onclick="closeModal('addLinkModal')">Cancel</button>
+      <button class="btn-primary" onclick="addNewLink()"><i class="fa-solid fa-plus"></i> Add Link</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="layout" id="mainLayout" style="display:none;">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark">F</div>
+      <div class="sb-logo-text">Flow<span>Link</span></div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-lbl">Main Menu</div>
+      <div class="sb-item active" onclick="setNav(this,'overview')">
+        <i class="fa-solid fa-house"></i> Home
+      </div>
+      <div class="sb-item" onclick="setNav(this,'biolink')">
+        <i class="fa-solid fa-link"></i> My Bio Link
+      </div>
+      <div class="sb-item" onclick="setNav(this,'bookings')">
+        <i class="fa-solid fa-calendar-check"></i> Bookings
+        <span class="sb-badge" id="bookingsBadge">0</span>
+      </div>
+      <div class="sb-item" onclick="setNav(this,'settings')">
+        <i class="fa-solid fa-gear"></i> Settings
+      </div>
+    </div>
+
+    <div class="sb-section">
+      <div class="sb-section-lbl">Quick Actions</div>
+      <div class="sb-item" onclick="window.open(getProfileUrl())">
+        <i class="fa-solid fa-eye"></i> View Profile
+      </div>
+      <div class="sb-item" onclick="copyProfileUrl()">
+        <i class="fa-solid fa-share-nodes"></i> Share Link
+      </div>
+    </div>
+
+    <div class="sb-user">
+      <div class="sb-user-card">
+        <div class="sb-avatar" id="sbAvatar">F</div>
+        <div class="sb-user-info">
+          <div class="sb-user-name" id="sbUserName">Loading...</div>
+          <div class="sb-user-role">Admin</div>
+        </div>
+        <i class="fa-solid fa-ellipsis" style="color:var(--text-4);font-size:12px;"></i>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Home</div>
+      <div class="topbar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search...">
+      </div>
+      <div class="topbar-btn" onclick="window.open(getProfileUrl())">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+      </div>
+      <div class="topbar-btn">
+        <i class="fa-regular fa-bell"></i>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="preview-btn" onclick="refreshPreview()">
+        <i class="fa-solid fa-mobile-screen-button"></i> Preview
+      </div>
+    </div>
+
+    <!-- Content + Preview -->
+    <div class="content-wrap">
+
+      <!-- Scrollable Panel -->
+      <div class="panel-main" id="panelMain">
+
+        <!-- ══ OVERVIEW TAB ══ -->
+        <div class="tab-pane active" id="tab-overview">
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-num" id="statViews">—</div>
+              <div class="stat-lbl">Total Bookings</div>
+              <div class="stat-badge up"><i class="fa-solid fa-arrow-trend-up"></i> Today</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statUsers" id="statUsers">—</div>
+              <div class="stat-lbl">Customers</div>
+              <div class="stat-badge up"><i class="fa-solid fa-users"></i> All time</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num" id="statRating">A+</div>
+              <div class="stat-lbl">Rating</div>
+              <div class="stat-badge up"><i class="fa-solid fa-star"></i> Excellent</div>
+            </div>
+          </div>
+
+          <!-- Profile card preview on overview -->
+          <div class="sec-card">
+            <div class="sec-card-hd">
+              <div class="sec-card-title"><i class="fa-solid fa-id-card"></i> Profile Summary</div>
+              <button class="btn-primary" onclick="setNavById('biolink')"><i class="fa-solid fa-pen"></i> Edit</button>
+            </div>
+            <div class="sec-card-body">
+              <div style="display:flex;gap:16px;align-items:center;">
+                <div style="width:56px;height:56px;border-radius:50%;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:var(--accent);overflow:hidden;flex-shrink:0;" id="ovAvatar">F</div>
+                <div>
+                  <div style="font-size:18px;font-weight:800;" id="ovName">—</div>
+                  <div style="font-size:13px;color:var(--text-3);margin-top:3px;" id="ovTitle">—</div>
+                  <div style="font-size:12px;color:var(--accent);margin-top:6px;display:flex;align-items:center;gap:5px;">
+                    <i class="fa-solid fa-link" style="font-size:10px;"></i>
+                    <span id="ovUrl">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent bookings -->
+          <div class="sec-card">
+            <div class="sec-card-hd">
+              <div class="sec-card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Bookings</div>
+            </div>
+            <div class="sec-card-body" id="recentBookingsList" style="padding:0;">
+              <div style="padding:24px;text-align:center;color:var(--text-4);font-size:13px;">
+                <i class="fa-solid fa-calendar-xmark" style="font-size:24px;margin-bottom:8px;display:block;"></i>
+                Loading bookings...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ BIO LINK TAB ══ -->
+        <div class="tab-pane" id="tab-biolink">
+
+          <!-- Profile header card -->
+          <div class="profile-header">
+            <div class="cover-area" id="coverArea">
+              <img id="coverImg" src="" alt="">
+              <button class="cover-edit-btn" onclick="document.getElementById('coverFileInput').click()">
+                <i class="fa-solid fa-camera"></i> Change Cover
+              </button>
+              <input type="file" id="coverFileInput" accept="image/*" style="display:none;" onchange="handleCoverUpload(event)">
+            </div>
+            <div class="profile-info-row">
+              <div class="avatar-wrap">
+                <div class="avatar-circle" id="avatarCircle">F
+                  <img id="avatarImg" src="" alt="">
+                </div>
+                <div class="avatar-edit" onclick="document.getElementById('avatarFileInput').click()">
+                  <i class="fa-solid fa-pen"></i>
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+              </div>
+              <div class="profile-meta">
+                <div class="profile-name-display" id="hdName">—</div>
+                <div class="profile-title-display" id="hdTitle">—</div>
+                <div class="profile-link-row">
+                  <div class="profile-url">
+                    <i class="fa-solid fa-link"></i>
+                    <span id="hdUrl" style="font-family:var(--mono);font-size:11px;">—</span>
+                  </div>
+                  <div class="share-btn" onclick="copyProfileUrl()">
+                    <i class="fa-solid fa-share-nodes"></i> Share
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="dash-tabs">
+            <div class="dtab active" onclick="switchBioTab(this,'profile')">Profile</div>
+            <div class="dtab" onclick="switchBioTab(this,'links')">Links</div>
+            <div class="dtab" onclick="switchBioTab(this,'appearance')">Appearance</div>
+            <div class="dtab" onclick="switchBioTab(this,'booking')">Booking</div>
+            <div class="dtab" onclick="switchBioTab(this,'payment')">Payment</div>
+          </div>
+
+          <!-- Profile sub-tab -->
+          <div id="biot-profile">
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-user"></i> Basic Info</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="f-row">
+                  <div class="f-group">
+                    <label class="f-label">Display Name</label>
+                    <input type="text" class="f-input" id="inDisplayName" placeholder="Your name">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">Title / Role</label>
+                    <input type="text" class="f-input" id="inTitle" placeholder="e.g. CEO · Doctor · Creator">
+                  </div>
+                </div>
+                <div class="f-group">
+                  <label class="f-label">About / Bio</label>
+                  <textarea class="f-textarea" id="inAbout" placeholder="Write something about yourself..."></textarea>
+                </div>
+                <div class="f-row-3">
+                  <div class="f-group">
+                    <label class="f-label">Customers Count</label>
+                    <input type="number" class="f-input" id="inCustomers" placeholder="1200">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">Founded Year</label>
+                    <input type="number" class="f-input" id="inFounded" placeholder="2020">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">Rating</label>
+                    <input type="text" class="f-input" id="inRating" placeholder="A+">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-phone"></i> Phone Numbers</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="phone-input-group">
+                  <div class="phone-row">
+                    <input type="tel" class="f-input" id="inPhone1" placeholder="01xxxxxxxxx — Primary">
+                    <div class="phone-row-rm" onclick="clearPhone('inPhone1')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+                  <div class="phone-row">
+                    <input type="tel" class="f-input" id="inPhone2" placeholder="01xxxxxxxxx — Secondary">
+                    <div class="phone-row-rm" onclick="clearPhone('inPhone2')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+                  <div class="phone-row">
+                    <input type="tel" class="f-input" id="inPhone3" placeholder="01xxxxxxxxx — Optional">
+                    <div class="phone-row-rm" onclick="clearPhone('inPhone3')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+                  <div class="phone-row">
+                    <input type="tel" class="f-input" id="inPhone4" placeholder="01xxxxxxxxx — Optional">
+                    <div class="phone-row-rm" onclick="clearPhone('inPhone4')"><i class="fa-solid fa-xmark"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-map-pin"></i> Location</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="f-group">
+                  <label class="f-label">Google Maps Link</label>
+                  <input type="url" class="f-input" id="inGoogleMaps" placeholder="https://maps.google.com/...">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Links sub-tab -->
+          <div id="biot-links" style="display:none;">
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-share-nodes"></i> Social Links</div>
+                <button class="btn-primary" onclick="openModal('addLinkModal')">
+                  <i class="fa-solid fa-plus"></i> Add Link
+                </button>
+              </div>
+              <div class="sec-card-body" id="linksListContainer">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Appearance sub-tab -->
+          <div id="biot-appearance" style="display:none;">
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-palette"></i> Theme</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="theme-grid" id="themeGrid">
+                  <!-- Rendered by JS -->
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-font"></i> Fonts</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="f-row">
+                  <div class="f-group">
+                    <label class="f-label">Arabic Font</label>
+                    <select class="f-select" id="inFontAr">
+                      <option value="">Default</option>
+                      <option value="Cairo">Cairo</option>
+                      <option value="Tajawal">Tajawal</option>
+                      <option value="Amiri">Amiri</option>
+                      <option value="Almarai">Almarai</option>
+                      <option value="Changa">Changa</option>
+                    </select>
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">English Font</label>
+                    <select class="f-select" id="inFontEn">
+                      <option value="">Default</option>
+                      <option value="Syne">Syne</option>
+                      <option value="DM Sans">DM Sans</option>
+                      <option value="Outfit">Outfit</option>
+                      <option value="Poppins">Poppins</option>
+                      <option value="Nunito">Nunito</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking sub-tab -->
+          <div id="biot-booking" style="display:none;">
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-calendar"></i> Booking Settings</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="toggle-row">
+                  <div class="toggle-info">
+                    <div class="toggle-label">Enable Booking</div>
+                    <div class="toggle-desc">Allow visitors to book appointments</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="togBooking">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-info">
+                    <div class="toggle-label">Enable Branches</div>
+                    <div class="toggle-desc">Show branch/clinic selector in booking</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="togBranches">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-info">
+                    <div class="toggle-label">VIP Option</div>
+                    <div class="toggle-desc">Show VIP priority booking option</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="togVip">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-money-bill"></i> Visit Prices</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="f-row-3">
+                  <div class="f-group">
+                    <label class="f-label">New Visit (EGP)</label>
+                    <input type="number" class="f-input" id="inPriceNew" placeholder="0">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">Follow-up (EGP)</label>
+                    <input type="number" class="f-input" id="inPriceFollow" placeholder="0">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">VIP (EGP)</label>
+                    <input type="number" class="f-input" id="inPriceVip" placeholder="0">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment sub-tab -->
+          <div id="biot-payment" style="display:none;">
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-bolt"></i> InstaPay</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="f-group">
+                  <label class="f-label">InstaPay Link or Username</label>
+                  <input type="text" class="f-input" id="inInstapay" placeholder="https://ipn.eg/... or username">
+                </div>
+              </div>
+            </div>
+            <div class="sec-card">
+              <div class="sec-card-hd">
+                <div class="sec-card-title"><i class="fa-solid fa-wallet"></i> E-Wallet</div>
+              </div>
+              <div class="sec-card-body">
+                <div class="toggle-row" style="margin-bottom:16px;">
+                  <div class="toggle-info">
+                    <div class="toggle-label">Show Wallet</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="togWallet">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+                <div class="f-row">
+                  <div class="f-group">
+                    <label class="f-label">Wallet Name</label>
+                    <input type="text" class="f-input" id="inWalletName" placeholder="Vodafone Cash">
+                  </div>
+                  <div class="f-group">
+                    <label class="f-label">Wallet Number</label>
+                    <input type="tel" class="f-input" id="inWalletNumber" placeholder="01xxxxxxxxx">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /tab-biolink -->
+
+        <!-- ══ BOOKINGS TAB ══ -->
+        <div class="tab-pane" id="tab-bookings">
+          <div class="sec-card">
+            <div class="sec-card-hd">
+              <div class="sec-card-title"><i class="fa-solid fa-calendar-check"></i> All Bookings</div>
+              <div style="display:flex;gap:8px;">
+                <select class="f-select" id="bookingsFilter" style="width:130px;padding:7px 10px;font-size:12px;" onchange="filterBookings()">
+                  <option value="all">All</option>
+                  <option value="كشف جديد">New Visit</option>
+                  <option value="متابعة">Follow-up</option>
+                  <option value="VIP">VIP</option>
+                </select>
+              </div>
+            </div>
+            <div id="bookingsTable" style="overflow-x:auto;">
+              <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                  <tr style="background:var(--bg);border-bottom:1px solid var(--border);">
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Name</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Phone</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Type</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Date</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Gov</th>
+                    <th style="padding:10px 16px;text-align:left;font-weight:700;color:var(--text-3);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingsTbody">
+                  <tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text-4);">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ SETTINGS TAB ══ -->
+        <div class="tab-pane" id="tab-settings">
+          <div class="sec-card">
+            <div class="sec-card-hd">
+              <div class="sec-card-title"><i class="fa-solid fa-shield-halved"></i> Account Settings</div>
+            </div>
+            <div class="sec-card-body">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Profile Active</div>
+                  <div class="toggle-desc">Show or hide your public profile page</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="togActive" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">VCF / Save Contact</div>
+                  <div class="toggle-desc">Allow visitors to download your contact card</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="togVcf" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <div class="toggle-label">Phone Visibility</div>
+                  <div class="toggle-desc">Show call button to visitors</div>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="togPhone" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-card-hd">
+              <div class="sec-card-title"><i class="fa-solid fa-user-id"></i> User ID</div>
+            </div>
+            <div class="sec-card-body">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input type="text" class="f-input" id="showUserId" style="flex:1;font-family:var(--mono);font-size:12px;" readonly>
+                <button class="btn-outline" onclick="copyUserId()"><i class="fa-solid fa-copy"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-main -->
+
+      <!-- Save bar (sticks to bottom of panel-main) -->
+      <div style="position:relative;">
+      </div>
+
+      <!-- Preview Panel -->
+      <div class="preview-panel">
+        <div class="preview-hd">
+          <div class="preview-hd-title">Preview</div>
+          <div style="display:flex;gap:6px;">
+            <div class="topbar-btn" style="width:28px;height:28px;" onclick="refreshPreview()" title="Refresh">
+              <i class="fa-solid fa-arrows-rotate" style="font-size:11px;"></i>
+            </div>
+            <i class="fa-solid fa-ellipsis preview-more"></i>
+          </div>
+        </div>
+        <div class="phone-frame">
+          <div class="phone-shell">
+            <div class="phone-inner">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <iframe id="previewFrame" src="" sandbox="allow-scripts allow-same-origin"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;justify-content:center;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div style="width:6px;height:6px;border-radius:50%;background:var(--success);"></div>
+            <span style="font-size:11px;color:var(--text-3);" id="previewStatus">Live preview</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-wrap -->
+
+    <!-- Floating Save Bar -->
+    <div id="saveBar" style="display:none;padding:12px 24px;background:var(--surface);border-top:1px solid var(--border);display:none;flex;align-items:center;justify-content:space-between;box-shadow:0 -4px 16px rgba(0,0,0,0.07);">
+      <div style="font-size:13px;color:var(--text-2);">
+        <i class="fa-solid fa-circle-info" style="color:var(--warn);margin-right:6px;"></i>
+        You have unsaved changes
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-outline" onclick="discardChanges()">Discard</button>
+        <button class="btn-primary" id="saveBtn" onclick="saveAllChanges()">
+          <i class="fa-solid fa-floppy-disk"></i> Save Changes
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, onSnapshot, deleteDoc }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getAuth, signInAnonymously, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyAxxWhIBlC92x_T4lBjDj7p7B3hrvhVZYg",
+  authDomain:        "alaqrab-system.firebaseapp.com",
+  projectId:         "alaqrab-system",
+  storageBucket:     "alaqrab-system.firebasestorage.app",
+  messagingSenderId: "660494503813",
+  appId:             "1:660494503813:web:3f45fc069b3506f8657eec",
+};
+
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+// ── Get user ID from hash ──
+function getHashUserId() {
+  const h = location.hash.replace(/^#\/?/, '').trim();
+  return /^[a-zA-Z0-9_\-]{4,128}$/.test(h) ? h : null;
+}
+
+let targetUserId = getHashUserId();
+let profileData  = {};
+let allBookings  = [];
+let isDirty      = false;
+
+// ── Auth ──
+await signInAnonymously(auth);
+
+// ── If no user ID → redirect ──
+if (!targetUserId) {
+  document.getElementById('loadingScreen').innerHTML =
+    `<div style="text-align:center;padding:40px;font-family:var(--font);">
+      <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+      <div style="font-size:18px;font-weight:700;color:var(--text-1);margin-bottom:8px;">No Profile Selected</div>
+      <div style="font-size:14px;color:var(--text-3);">Add your user ID to the URL: admin.html#YOUR_ID</div>
+    </div>`;
+  throw new Error('No userId');
+}
+
+// ── Show user ID ──
+document.getElementById('showUserId').value = targetUserId;
+
+// ── Profile URL ──
+window.getProfileUrl = () => `${location.origin}${location.pathname.replace('admin.html','FlowLink_v10.html')}#/${targetUserId}`;
+
+// ── THEMES definition ──
+const THEMES = [
+  {key:'snow',    name:'Snow',     top:'#ffffff', bot:'#f5f5f5', txt:'#0a0a0a'},
+  {key:'cream',   name:'Cream',    top:'#fdf8ee', bot:'#f5e9cc', txt:'#18120a'},
+  {key:'midnight',name:'Midnight', top:'#0b0f1a', bot:'#1e293b', txt:'#dff0ff'},
+  {key:'obsidian',name:'Obsidian', top:'#000000', bot:'#111111', txt:'#ffffff'},
+  {key:'sand',    name:'Sand',     top:'#fdf6ee', bot:'#f0e9de', txt:'#2c1a0e'},
+  {key:'forest',  name:'Forest',   top:'#0d1a12', bot:'#1a3326', txt:'#e8f5ec'},
+  {key:'ocean',   name:'Ocean',    top:'#05101e', bot:'#0a2040', txt:'#dff0ff'},
+  {key:'rose',    name:'Rose',     top:'#1a060f', bot:'#2d0d1f', txt:'#ffeef5'},
+  {key:'slate',   name:'Slate',    top:'#f1f3f5', bot:'#e2e6ea', txt:'#1a1f2e'},
+  {key:'lavender',name:'Lavender', top:'#f5f3ff', bot:'#ede9fe', txt:'#1e1030'},
+  {key:'coral',   name:'Coral',    top:'#fff5f0', bot:'#ffe0d0', txt:'#1c0a06'},
+  {key:'mint',    name:'Mint',     top:'#f0fdf8', bot:'#dcfce8', txt:'#062318'},
+  {key:'charcoal',name:'Charcoal', top:'#1c1917', bot:'#292524', txt:'#fafaf9'},
+  {key:'amber',   name:'Amber',    top:'#fffbeb', bot:'#fef3c7', txt:'#1c1500'},
+  {key:'indigo',  name:'Indigo',   top:'#1e1b4b', bot:'#252060', txt:'#eef2ff'},
+  {key:'emerald', name:'Emerald',  top:'#f0fdf4', bot:'#dcfce7', txt:'#052e16'},
+  {key:'wine',    name:'Wine',     top:'#1a0812', bot:'#280d1c', txt:'#fce7f0'},
+  {key:'arctic',  name:'Arctic',   top:'#f0f8ff', bot:'#e0f0ff', txt:'#001a30'},
+  {key:'graphite',name:'Graphite', top:'#111111', bot:'#1a1a1a', txt:'#e8e8e8'},
+  {key:'sunset',  name:'Sunset',   top:'#fff7f0', bot:'#ffe8d6', txt:'#1c0800'},
+  {key:'neon',    name:'Neon',     top:'#050a05', bot:'#0a150a', txt:'#e0ffe0'},
+  {key:'sakura',  name:'Sakura',   top:'#fff0f6', bot:'#ffd6e7', txt:'#1a0010'},
+  {key:'storm',   name:'Storm',    top:'#0e1520', bot:'#162030', txt:'#dce8ff'},
+  {key:'mocha',   name:'Mocha',    top:'#1a1008', bot:'#241808', txt:'#fdf2e0'},
+];
+const themeIndexMap = {};
+THEMES.forEach((t,i) => themeIndexMap[t.key] = i+1);
+
+// ── Build theme grid ──
+function buildThemeGrid(selectedKey) {
+  const grid = document.getElementById('themeGrid');
+  grid.innerHTML = '';
+  THEMES.forEach(t => {
+    const sw = document.createElement('div');
+    sw.className = 'theme-swatch' + (t.key === selectedKey ? ' active' : '');
+    sw.innerHTML = `
+      <div class="ts-top" style="background:${t.top};"></div>
+      <div class="ts-bot" style="background:${t.bot};">
+        <span class="ts-name" style="color:${t.txt};">${t.name}</span>
+      </div>
+      <div class="ts-check"><i class="fa-solid fa-check"></i></div>`;
+    sw.onclick = () => {
+      document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      profileData.uiTheme = themeIndexMap[t.key];
+      markDirty();
+      refreshPreview();
+    };
+    grid.appendChild(sw);
+  });
+}
+
+// ── Social links definition ──
+const SOCIAL_LINKS = [
+  { key:'whatsapp',     label:'WhatsApp',       icon:'fa-brands fa-whatsapp',       color:'#25d366' },
+  { key:'facebook',     label:'Facebook',        icon:'fa-brands fa-facebook-f',      color:'#1877f2' },
+  { key:'insta',        label:'Instagram',       icon:'fa-brands fa-instagram',       color:'#e4405f' },
+  { key:'tiktok',       label:'TikTok',          icon:'fa-brands fa-tiktok',          color:'#000000' },
+  { key:'youtube',      label:'YouTube',         icon:'fa-brands fa-youtube',         color:'#FF0000' },
+  { key:'snapchat',     label:'Snapchat',        icon:'fa-brands fa-snapchat',        color:'#f5b800' },
+  { key:'x',            label:'X (Twitter)',     icon:'fa-brands fa-x-twitter',       color:'#000000' },
+  { key:'linkedin',     label:'LinkedIn',        icon:'fa-brands fa-linkedin-in',     color:'#0A66C2' },
+  { key:'threads',      label:'Threads',         icon:'fa-brands fa-threads',         color:'#000000' },
+  { key:'truecaller',   label:'Truecaller',      icon:'fa-solid fa-phone-flip',       color:'#0056D2' },
+  { key:'googleReviews',label:'Google Reviews',  icon:'fa-solid fa-star',             color:'#F4B400' },
+  { key:'googleMaps',   label:'Google Maps',     icon:'fa-solid fa-map-pin',          color:'#34A853' },
+];
+
+function buildLinksList() {
+  const c = document.getElementById('linksListContainer');
+  c.innerHTML = '';
+  SOCIAL_LINKS.forEach(s => {
+    const val = profileData[s.key] || '';
+    const item = document.createElement('div');
+    item.className = 'link-block';
+    item.id = `lb-${s.key}`;
+    item.innerHTML = `
+      <span class="lb-drag"><i class="fa-solid fa-grip-vertical"></i></span>
+      <div class="lb-icon" style="background:${s.color}18;color:${s.color};">
+        <i class="${s.icon}"></i>
+      </div>
+      <div class="lb-info">
+        <div class="lb-title">${s.label}</div>
+        <input type="url" value="${val}" placeholder="Enter URL..." 
+          style="width:100%;background:transparent;border:none;outline:none;font-size:12px;color:var(--text-3);margin-top:2px;font-family:var(--font);"
+          oninput="profileData['${s.key}']=this.value;markDirty();">
+      </div>
+      <div class="lb-actions">
+        ${val ? `<div class="lb-btn" onclick="window.open('${val}','_blank')" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>` : ''}
+        <div class="lb-btn danger" onclick="clearLink('${s.key}')" title="Remove"><i class="fa-solid fa-trash"></i></div>
+      </div>`;
+    c.appendChild(item);
+  });
+}
+
+window.clearLink = (key) => {
+  profileData[key] = '';
+  buildLinksList();
+  markDirty();
+};
+
+window.clearPhone = (id) => {
+  document.getElementById(id).value = '';
+  markDirty();
+};
+
+// ── Load profile ──
+async function loadProfile() {
+  try {
+    const snap = await getDoc(doc(db, 'users', targetUserId));
+    if (snap.exists()) {
+      profileData = snap.data();
+      populateForm();
+    }
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('mainLayout').style.display = 'flex';
+    loadBookings();
+    refreshPreview();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loadingScreen').innerHTML =
+      `<div style="text-align:center;color:#ef4444;padding:40px;">Error loading profile: ${e.message}</div>`;
+  }
+}
+
+function populateForm() {
+  const d = profileData;
+
+  // Header
+  const name = d.displayName || '—';
+  document.getElementById('hdName').textContent = name;
+  document.getElementById('hdTitle').textContent = d.title || '—';
+  document.getElementById('hdUrl').textContent = getProfileUrl();
+  document.getElementById('sbUserName').textContent = name;
+  document.getElementById('ovName').textContent = name;
+  document.getElementById('ovTitle').textContent = d.title || '—';
+  document.getElementById('ovUrl').textContent = getProfileUrl();
+
+  // Sidebar avatar
+  const sbAv = document.getElementById('sbAvatar');
+  sbAv.textContent = name.charAt(0).toUpperCase();
+
+  // Stats
+  document.getElementById('statUsers').textContent = d.customersCount || 0;
+  document.getElementById('statRating').textContent = d.rating || 'A+';
+
+  // Cover
+  if (d.heroImg) {
+    const ci = document.getElementById('coverImg');
+    ci.src = d.heroImg; ci.onload = () => ci.classList.add('loaded');
+  }
+  // Avatar
+  if (d.logoImg || d.avatarImg) {
+    const ai = document.getElementById('avatarImg');
+    ai.src = d.logoImg || d.avatarImg;
+    ai.onload = () => ai.classList.add('loaded');
+    document.getElementById('ovAvatar').innerHTML = `<img src="${ai.src}" style="width:56px;height:56px;object-fit:cover;border-radius:50%;">`;
+    document.getElementById('sbAvatar').innerHTML = `<img src="${ai.src}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;">`;
+  }
+
+  // Profile form
+  document.getElementById('inDisplayName').value = d.displayName || '';
+  document.getElementById('inTitle').value        = d.title || '';
+  document.getElementById('inAbout').value        = d.about || '';
+  document.getElementById('inCustomers').value    = d.customersCount || '';
+  document.getElementById('inFounded').value      = d.foundedYear || '';
+  document.getElementById('inRating').value       = d.rating || '';
+
+  // Phones
+  ['phone1','phone2','phone3','phone4'].forEach(k => {
+    const el = document.getElementById('in'+k.charAt(0).toUpperCase()+k.slice(1));
+    if (el) el.value = d[k] || '';
+  });
+
+  // Maps
+  document.getElementById('inGoogleMaps').value = d.googleMaps || d.mapLink || '';
+
+  // Fonts
+  document.getElementById('inFontAr').value = d.fontAr || '';
+  document.getElementById('inFontEn').value = d.fontEn || '';
+
+  // Booking toggles
+  document.getElementById('togBooking').checked  = d.booking_enabled !== false;
+  document.getElementById('togBranches').checked = d.enableBranches || false;
+
+  // Payment
+  document.getElementById('inInstapay').value    = d.instapay || '';
+  document.getElementById('togWallet').checked   = d.showWallet || false;
+  document.getElementById('inWalletName').value  = d.walletName || '';
+  document.getElementById('inWalletNumber').value= d.walletNumber || '';
+
+  // Prices
+  document.getElementById('inPriceNew').value    = d.priceNew || '';
+  document.getElementById('inPriceFollow').value = d.priceFollow || '';
+  document.getElementById('inPriceVip').value    = d.priceVip || '';
+
+  // Theme
+  const themeIdx = parseInt(d.uiTheme || '20') - 1;
+  const currentTheme = THEMES[Math.min(Math.max(themeIdx,0), THEMES.length-1)];
+  buildThemeGrid(currentTheme.key);
+
+  // Social links
+  buildLinksList();
+
+  // Settings toggles
+  document.getElementById('togActive').checked = d.active !== false;
+  document.getElementById('togVcf').checked    = d.toggles?.vcf !== false;
+  document.getElementById('togPhone').checked  = d.toggles?.phone !== false;
+}
+
+// ── Watch for input changes ──
+function markDirty() {
+  isDirty = true;
+  document.getElementById('saveBar').style.display = 'flex';
+}
+
+function attachChangeListeners() {
+  const inputIds = [
+    'inDisplayName','inTitle','inAbout','inCustomers','inFounded','inRating',
+    'inPhone1','inPhone2','inPhone3','inPhone4','inGoogleMaps',
+    'inFontAr','inFontEn','inInstapay','inWalletName','inWalletNumber',
+    'inPriceNew','inPriceFollow','inPriceVip',
+  ];
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', markDirty);
+  });
+  const checkIds = ['togBooking','togBranches','togVip','togWallet','togActive','togVcf','togPhone'];
+  checkIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', markDirty);
+  });
+}
+
+// ── Save ──
+window.saveAllChanges = async () => {
+  const btn = document.getElementById('saveBtn');
+  btn.classList.add('saving');
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+  // Collect from form
+  profileData.displayName   = document.getElementById('inDisplayName').value.trim();
+  profileData.title         = document.getElementById('inTitle').value.trim();
+  profileData.about         = document.getElementById('inAbout').value.trim();
+  profileData.customersCount= parseInt(document.getElementById('inCustomers').value) || 0;
+  profileData.foundedYear   = parseInt(document.getElementById('inFounded').value) || 2024;
+  profileData.rating        = document.getElementById('inRating').value.trim() || 'A+';
+  profileData.phone1        = document.getElementById('inPhone1').value.trim();
+  profileData.phone2        = document.getElementById('inPhone2').value.trim();
+  profileData.phone3        = document.getElementById('inPhone3').value.trim();
+  profileData.phone4        = document.getElementById('inPhone4').value.trim();
+  profileData.googleMaps    = document.getElementById('inGoogleMaps').value.trim();
+  profileData.fontAr        = document.getElementById('inFontAr').value;
+  profileData.fontEn        = document.getElementById('inFontEn').value;
+  profileData.booking_enabled = document.getElementById('togBooking').checked;
+  profileData.enableBranches= document.getElementById('togBranches').checked;
+  profileData.instapay      = document.getElementById('inInstapay').value.trim();
+  profileData.showWallet    = document.getElementById('togWallet').checked;
+  profileData.walletName    = document.getElementById('inWalletName').value.trim();
+  profileData.walletNumber  = document.getElementById('inWalletNumber').value.trim();
+  profileData.priceNew      = parseInt(document.getElementById('inPriceNew').value) || 0;
+  profileData.priceFollow   = parseInt(document.getElementById('inPriceFollow').value) || 0;
+  profileData.priceVip      = parseInt(document.getElementById('inPriceVip').value) || 0;
+  profileData.active        = document.getElementById('togActive').checked;
+  if (!profileData.toggles) profileData.toggles = {};
+  profileData.toggles.vcf  = document.getElementById('togVcf').checked;
+  profileData.toggles.phone= document.getElementById('togPhone').checked;
+
+  try {
+    await setDoc(doc(db, 'users', targetUserId), profileData, { merge: true });
+    isDirty = false;
+    document.getElementById('saveBar').style.display = 'none';
+    showToast('Changes saved successfully!', 'success');
+    populateForm();
+    refreshPreview();
+  } catch(e) {
+    showToast('Error saving: ' + e.message, 'error');
+  }
+  btn.classList.remove('saving');
+  btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+};
+
+window.discardChanges = () => {
+  populateForm();
+  isDirty = false;
+  document.getElementById('saveBar').style.display = 'none';
+  showToast('Changes discarded', '');
+};
+
+// ── Load bookings ──
+function loadBookings() {
+  const q = query(
+    collection(db, 'users', targetUserId, 'bookings'),
+    orderBy('createdAt','desc'),
+    limit(50)
+  );
+  onSnapshot(q, (snap) => {
+    allBookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    document.getElementById('bookingsBadge').textContent = allBookings.length;
+    document.getElementById('statViews').textContent = allBookings.length;
+    renderBookings(allBookings);
+    renderRecentBookings(allBookings.slice(0,5));
+  });
+}
+
+function renderBookings(list) {
+  const tbody = document.getElementById('bookingsTbody');
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text-4);font-size:13px;">No bookings yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(b => {
+    const typeColor = b.type === 'VIP' ? '#f59e0b' : b.type === 'متابعة' ? '#6c47ff' : '#10b981';
+    const typeLabel = b.type === 'كشف جديد' ? 'New Visit' : b.type === 'متابعة' ? 'Follow-up' : b.type || '—';
+    return `<tr style="border-bottom:1px solid var(--border);transition:background var(--t);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+      <td style="padding:12px 16px;font-weight:600;">${b.userName || '—'}</td>
+      <td style="padding:12px 16px;font-family:var(--mono);font-size:12px;color:var(--text-2);">${b.userPhone || '—'}</td>
+      <td style="padding:12px 16px;">
+        <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${typeColor}18;color:${typeColor};">${typeLabel}</span>
+      </td>
+      <td style="padding:12px 16px;color:var(--text-2);font-size:13px;">${b.date || '—'} ${b.time ? '· '+b.time : ''}</td>
+      <td style="padding:12px 16px;color:var(--text-3);font-size:12px;">${b.governorate || '—'}</td>
+      <td style="padding:12px 16px;">
+        <button onclick="deleteBooking('${b.id}')" style="padding:4px 10px;border-radius:6px;background:#fef2f2;border:1px solid #fecaca;color:#ef4444;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);">
+          Delete
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRecentBookings(list) {
+  const el = document.getElementById('recentBookingsList');
+  if (!list.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--text-4);font-size:13px;">No bookings yet</div>';
+    return;
+  }
+  el.innerHTML = list.map(b => {
+    const typeColor = b.type==='VIP' ? '#f59e0b' : b.type==='متابعة' ? '#6c47ff' : '#10b981';
+    const typeLabel = b.type==='كشف جديد' ? 'New Visit' : b.type==='متابعة' ? 'Follow-up' : b.type || '—';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid var(--border);">
+      <div style="width:36px;height:36px;border-radius:50%;background:${typeColor}15;display:flex;align-items:center;justify-content:center;color:${typeColor};font-size:14px;font-weight:800;flex-shrink:0;">
+        ${(b.userName||'?').charAt(0).toUpperCase()}
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;">${b.userName||'—'}</div>
+        <div style="font-size:12px;color:var(--text-3);">${b.userPhone||'—'} · ${b.date||'—'}</div>
+      </div>
+      <span style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${typeColor}15;color:${typeColor};">${typeLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+window.filterBookings = () => {
+  const v = document.getElementById('bookingsFilter').value;
+  renderBookings(v === 'all' ? allBookings : allBookings.filter(b => b.type === v));
+};
+
+window.deleteBooking = async (id) => {
+  if (!confirm('Delete this booking?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', targetUserId, 'bookings', id));
+    showToast('Booking deleted', 'success');
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+};
+
+// ── Preview ──
+window.refreshPreview = () => {
+  const frame = document.getElementById('previewFrame');
+  const url = `${location.origin}${location.pathname.replace('FlowLink_Admin.html','FlowLink_v10.html')}#/${targetUserId}`;
+  frame.src = url + '&t=' + Date.now();
+  document.getElementById('previewStatus').textContent = 'Refreshing...';
+  frame.onload = () => { document.getElementById('previewStatus').textContent = 'Live preview'; };
+};
+
+// ── Add new link ──
+window.addNewLink = () => {
+  const platform = document.getElementById('newLinkPlatform').value;
+  const url      = document.getElementById('newLinkUrl').value.trim();
+  if (!url) { showToast('Please enter a URL', 'error'); return; }
+  profileData[platform] = url;
+  markDirty();
+  buildLinksList();
+  closeModal('addLinkModal');
+  showToast('Link added!', 'success');
+};
+
+window.updateNewLinkIcon = () => {};
+
+// ── Copy URL ──
+window.copyProfileUrl = () => {
+  navigator.clipboard.writeText(getProfileUrl());
+  showToast('Link copied!', 'success');
+};
+window.copyUserId = () => {
+  navigator.clipboard.writeText(targetUserId);
+  showToast('User ID copied!', 'success');
+};
+
+// ── Upload cover/avatar (base64) ──
+window.handleCoverUpload = (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = (ev) => {
+    profileData.heroImg = ev.target.result;
+    const ci = document.getElementById('coverImg');
+    ci.src = ev.target.result; ci.classList.add('loaded');
+    markDirty();
+  };
+  r.readAsDataURL(file);
+};
+
+window.handleAvatarUpload = (e) => {
+  const file = e.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = (ev) => {
+    profileData.logoImg = ev.target.result;
+    const ai = document.getElementById('avatarImg');
+    ai.src = ev.target.result; ai.classList.add('loaded');
+    markDirty();
+  };
+  r.readAsDataURL(file);
+};
+
+// ── Navigation ──
+window.setNav = (el, tab) => {
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const pane = document.getElementById('tab-'+tab);
+  if (pane) pane.classList.add('active');
+  document.getElementById('topbarTitle').textContent = el.textContent.trim();
+};
+window.setNavById = (tab) => {
+  const item = [...document.querySelectorAll('.sb-item')].find(i => i.textContent.trim().toLowerCase().includes(tab));
+  if (item) setNav(item, tab);
+};
+
+// ── Bio sub-tabs ──
+window.switchBioTab = (el, tab) => {
+  document.querySelectorAll('.dtab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['profile','links','appearance','booking','payment'].forEach(t => {
+    const el2 = document.getElementById('biot-'+t);
+    if (el2) el2.style.display = t===tab ? 'block' : 'none';
+  });
+};
+
+// ── Modal ──
+window.openModal  = id => document.getElementById(id).classList.add('open');
+window.closeModal = id => document.getElementById(id).classList.remove('open');
+document.querySelectorAll('.modal-overlay').forEach(m => m.onclick = e => { if(e.target===m) m.classList.remove('open'); });
+
+// ── Toast ──
+let toastTimer;
+window.showToast = (msg, type='') => {
+  const t = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  t.className = 'toast';
+  document.getElementById('toastMsg').textContent = msg;
+  icon.className = type==='success' ? 'fa-solid fa-check' : type==='error' ? 'fa-solid fa-xmark' : 'fa-solid fa-info';
+  t.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3000);
+};
+
+// ── INIT ──
+attachChangeListeners();
+await loadProfile();
+</script>
+
+</body>
+</html>
