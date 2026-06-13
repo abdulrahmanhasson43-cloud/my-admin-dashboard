@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 11%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 17%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 17%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 43 90% 61%;
+    --primary-foreground: 0 0% 11%;
+    --secondary: 0 0% 17%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 23%;
+    --muted-foreground: 0 0% 56%;
+    --accent: 0 0% 23%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 67%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 23%;
+    --input: 0 0% 23%;
+    --ring: 43 90% 61%;
+    --radius: 0.625rem;
+    --yellow: #F5C443;
+    --purple: #8B7CFF;
+    --green: #34C759;
+    --red: #FF5757;
+    --teal: #5AC8FA;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-neutral-900 text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: auto;
+  }
+}
+
+/* Mobile scrollbar hiding */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Barcode pattern */
+.barcode-lines {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 60px;
+}
+
+.barcode-line {
+  background: #000;
+  height: 100%;
+}
+
+.barcode-line:nth-child(odd) { width: 2px; }
+.barcode-line:nth-child(even) { width: 1px; }
+.barcode-line:nth-child(3n) { width: 3px; }
+.barcode-line:nth-child(5n) { width: 1px; height: 80%; }
+.barcode-line:nth-child(7n) { width: 2px; height: 90%; }
+
+/* Timeline connector */
+.timeline-connector {
+  position: relative;
+}
+.timeline-connector::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 24px;
+  bottom: -8px;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #34C759 0px,
+    #34C759 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.timeline-connector-gray::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    #636366 0px,
+    #636366 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+/* Carousel snap */
+.carousel-snap {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.carousel-snap > * {
+  scroll-snap-align: center;
+}
+
+/* Map pin pulse */
+@keyframes pin-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+.pin-pulse {
+  animation: pin-pulse 2s ease-in-out infinite;
+}
+
+/* Shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #2C2C2E 25%, #3A3A3C 50%, #2C2C2E 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
