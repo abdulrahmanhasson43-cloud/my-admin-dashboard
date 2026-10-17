@@ -1,0 +1,429 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Vuno design system — monochrome ink accent (no blue). Same Apple-
+       inspired restraint as DESIGN.md (hairline borders, no chrome
+       gradients, one signature product shadow) but the interactive
+       accent is near-black ink instead of Action Blue — that's Vuno's
+       actual brand color, confirmed 2026-08-06. */
+    --vuno-primary: #1D1D1F;
+    --vuno-primary-light: #3A3A3C;
+    --vuno-primary-dark: #000000;
+    --vuno-warning: #FF9500;
+    --vuno-success: #34C759;
+    --vuno-danger: #FF3B30;
+    --vuno-info: #1D1D1F;
+    --vuno-bg: #F7F3EC;
+    --vuno-bg-parchment: #F7F3EC;
+    --vuno-surface: #FFFFFF;
+    --vuno-surface-elevated: #FFFFFF;
+    --vuno-surface-pearl: #FAFAFC;
+    --vuno-ink: #1D1D1F;
+    --vuno-text: #1D1D1F;
+    --vuno-text-secondary: #6E6E73;
+    --vuno-text-muted: #A1A1A6;
+    --vuno-border: #E0E0E0;
+    --vuno-border-light: #F0F0F0;
+    --vuno-hairline: #E0E0E0;
+    --vuno-surface-tile-1: #272729;
+    --vuno-surface-tile-2: #2A2A2C;
+    --vuno-surface-tile-3: #252527;
+    --vuno-surface-tile-dark: #272729;
+    --vuno-primary-on-dark: #FFFFFF;
+    /* Signature product-imagery drop-shadow — the ONLY shadow in the system */
+    --vuno-product-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px;
+
+    --background: 240 8% 97%;
+    --foreground: 240 4% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 4% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 4% 11%;
+    /* === UNIFIED COLOR SYSTEM ===
+       --primary uses ink #1D1D1F (240 4% 11%) so that every shadcn
+       component (bg-primary, text-primary, border-primary, ring,
+       sidebar active) matches --vuno-primary. */
+    --primary: 240 4% 11%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 4% 11%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 2% 45%;
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 4% 11%;
+    --destructive: 5 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 240 4% 11%;
+    --radius: 1.125rem;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 4% 11%;
+    --sidebar-primary: 240 4% 11%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 96%;
+    --sidebar-accent-foreground: 240 4% 11%;
+    --sidebar-border: 0 0% 88%;
+    --sidebar-ring: 240 4% 11%;
+  }
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: light;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-[var(--vuno-bg)] text-[var(--vuno-text)] antialiased;
+    font-family: 'Cairo', 'Inter', sans-serif;
+    direction: rtl;
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  /* Numbers and prices are Latin digits — give them their own dedicated
+     English typeface (Inter) instead of Cairo's digit glyphs, so Arabic
+     text and English/numeric content each read in their own proper font. */
+  .tabular-nums {
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer utilities {
+  .gradient-header {
+    background: var(--vuno-primary);
+  }
+
+  .gradient-btn {
+    background: var(--vuno-primary);
+    transition: transform 0.15s ease;
+  }
+
+  .gradient-btn:active {
+    transform: scale(0.96);
+  }
+
+  .card-vuno {
+    @apply bg-white rounded-2xl border border-[var(--vuno-border)];
+  }
+
+  .card-vuno-elevated {
+    @apply bg-white rounded-2xl border border-[var(--vuno-border)];
+  }
+
+  .text-gradient {
+    color: var(--vuno-primary);
+  }
+
+  .icon-circle {
+    @apply w-14 h-14 rounded-full flex items-center justify-center text-white;
+    background: var(--vuno-primary);
+  }
+
+  .nav-item-active {
+    color: var(--vuno-primary);
+  }
+
+  .nav-item-inactive {
+    color: var(--vuno-text-muted);
+  }
+
+  .sidebar-item-active {
+    background: color-mix(in srgb, var(--vuno-primary) 8%, transparent);
+    @apply text-[var(--vuno-primary)] border-r-2 border-[var(--vuno-primary)];
+  }
+
+  .sidebar-item-inactive {
+    @apply text-[var(--vuno-text-secondary)] hover:bg-gray-50 hover:text-[var(--vuno-text)];
+  }
+
+  .page-transition {
+    @apply animate-in fade-in slide-in-from-bottom-4 duration-300;
+  }
+
+  /* Pill-shaped primary button — DESIGN.md button-primary (rounded: 9999px) */
+  .btn-primary-pill {
+    border-radius: 9999px;
+    background: var(--vuno-primary);
+    color: #fff;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .btn-primary-pill:hover {
+    background: var(--vuno-primary-light);
+  }
+  .btn-primary-pill:active {
+    transform: scale(0.95);
+  }
+
+  /* Pill-shaped search input — DESIGN.md search-input */
+  .search-input-pill {
+    border-radius: 9999px;
+    border: 1px solid var(--vuno-hairline);
+    background: var(--vuno-surface-pearl);
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .search-input-pill:focus-within {
+    border-color: var(--vuno-primary);
+    background: var(--vuno-surface);
+  }
+
+  /* Store utility card — DESIGN.md rounded 18px, hairline border, no shadow */
+  .store-utility-card {
+    border-radius: 18px;
+    border: 1px solid var(--vuno-hairline);
+    background: var(--vuno-surface);
+  }
+
+  /* Apple SF Pro Display headline — negative letter-spacing, weight 600 */
+  .sf-display {
+    font-family: 'SF Pro Display', 'Cairo', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.015em;
+  }
+  .sf-text {
+    font-family: 'SF Pro Text', 'Cairo', system-ui, -apple-system, sans-serif;
+  }
+
+  /* The single signature drop-shadow — only for product/visual imagery */
+  .product-shadow {
+    box-shadow: var(--vuno-product-shadow);
+  }
+
+  /* Active state micro-interaction per DESIGN.md */
+  .active-scale {
+    transition: transform 0.15s ease;
+  }
+  .active-scale:active {
+    transform: scale(0.95);
+  }
+
+  /* Thermal receipt styling — monospace, narrow paper look */
+  .thermal-receipt {
+    font-family: 'Courier New', 'Cairo', monospace;
+    color: #000;
+    background: #fff;
+  }
+
+  /* Hide scrollbar but keep scroll for horizontal chip rows */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Animation classes */
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Bottom nav shadow */
+.bottom-nav-shadow {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Modern desktop list row — replaces raw <table> grid-lines-and-cells
+   look ("Excel") with a card-list pattern: soft hover, no cell borders,
+   generous padding, proportional-width columns via flexbox. */
+.list-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vuno-text-muted);
+}
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--vuno-border-light);
+  transition: background-color 0.15s ease;
+}
+.list-row:hover {
+  background: var(--vuno-bg);
+}
+
+/* Input focus ring — matches --vuno-primary (ink) */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(29, 29, 31, 0.15);
+  border-color: var(--vuno-primary);
+}
+
+/* Print — used for "طباعة الفاتورة" buttons. Hides everything except the
+   element marked .invoice-print-area (the invoice card/modal itself). */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print-area, .invoice-print-area * {
+    visibility: visible;
+  }
+  .invoice-print-area {
+    position: fixed;
+    inset: 0;
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    margin: 0 auto;
+  }
+  /* .no-print — elements that should never appear in print output */
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Thermal printer CSS — Idea #23
+   58mm / 80mm thermal receipt printers (Epson, Star, Xprinter …).
+   When the user clicks "طباعة حرارية" the browser print dialog opens;
+   these rules force the .thermal-receipt element to occupy the full
+   page at the exact paper width, monospace font, and compact line-height
+   that thermal printers expect. Everything else is hidden via .no-print.
+   ────────────────────────────────────────────────────────────────────────── */
+@media print {
+  /* When printing a thermal receipt, hide the entire app and only show
+     the .thermal-receipt element + its descendants. */
+  .thermal-print-active body * {
+    visibility: hidden;
+  }
+  .thermal-print-active .thermal-receipt,
+  .thermal-print-active .thermal-receipt * {
+    visibility: visible;
+  }
+  .thermal-print-active .thermal-receipt {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    margin: 0 auto;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 4mm;
+    color: #000 !important;
+    background: #fff !important;
+    font-family: 'Courier New', 'Cairo', monospace !important;
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+  /* 58mm paper — ~58mm printable width */
+  .thermal-print-active .thermal-receipt.thermal-58 {
+    width: 58mm !important;
+    max-width: 58mm !important;
+  }
+  /* 80mm paper — ~80mm printable width */
+  .thermal-print-active .thermal-receipt.thermal-80 {
+    width: 80mm !important;
+    max-width: 80mm !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Touch optimizations — Idea #22 (Mobile-First POS)
+   ────────────────────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  /* Eliminate 300ms tap delay on mobile browsers that still apply it */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
+  }
+  /* Prevent text-selection popups when long-pressing buttons/cards —
+     common annoyance on touch POS interfaces */
+  .select-none-touch {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+}
