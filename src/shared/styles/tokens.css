@@ -1,0 +1,42 @@
+/*
+  رموز التصميم — مصدر الحقيقة الوحيد للألوان والخطوط والمقاسات.
+  لون تفاعلي واحد (accent) كما في فلسفة آبل، وخلفية داكنة محايدة للصور.
+*/
+@theme {
+  --font-sans: "Readex Pro Variable", "Readex Pro", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+  --font-display: var(--font-sans);
+
+  /* الأسطح */
+  --color-ink: #0b0c0f;
+  --color-ink-2: #101116;
+  --color-surface: #16171d;
+  --color-surface-2: #1d1e25;
+  --color-line: rgba(255, 255, 255, 0.1);
+
+  /* النص */
+  --color-text: #f5f5f7;
+  --color-muted: #a0a1ab;
+  --color-faint: #6c6d77;
+
+  /* اللون التفاعلي الوحيد: الأزرق (كما في أول تصميم) */
+  --color-accent: #3d8bff;
+  --color-accent-2: #3d8bff;
+
+  /* ألوان وظيفية فقط (تقييم/نجاح) */
+  --color-gold: #f2c14e;
+  --color-mint: #4bd69a;
+  --color-violet: #3d8bff;
+
+  /* المقاسات الثابتة */
+  --tap: 44px;          /* أقل مساحة لمس (Apple HIG) */
+  --btn-h: 48px;        /* ارتفاع الزر القياسي */
+  --btn-h-lg: 52px;     /* زر الجوال الأساسي */
+  --radius-btn: 9999px;
+  --radius-poster: 4px;
+  --gutter: 16px;
+  --topbar-h: 52px;
+  --tabbar-h: 56px;
+}
+
+@media (min-width: 768px)  { :root { --gutter: 32px; --topbar-h: 64px; } }
+@media (min-width: 1280px) { :root { --gutter: 56px; } }

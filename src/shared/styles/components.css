@@ -1,0 +1,70 @@
+/* داخل طبقة components حتى تتغلّب عليها أدوات Tailwind (مثل ps-8 و !h-10) */
+@layer components {
+/* ---------- الأزرار: ارتفاع ثابت 48px، نصف قطر 12px ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: var(--btn-h); padding: 0 24px; border-radius: var(--radius-btn);
+  font-size: 16px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer;
+  transition: background-color .15s ease, opacity .15s ease, transform .15s ease;
+}
+.btn:active { transform: scale(.98); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+.btn-primary { background: #fff; color: #0b0c0f; }
+.btn-primary:hover { background: #e4e4e8; }
+.btn-ghost { background: rgba(255, 255, 255, .16); color: #fff; }
+.btn-ghost:hover { background: rgba(255, 255, 255, .24); }
+.btn-quiet { background: transparent; color: var(--color-muted); box-shadow: inset 0 0 0 1px var(--color-line); }
+.btn-quiet:hover { color: #fff; }
+.btn-lg { height: var(--btn-h-lg); }
+/* زرّان متجاوران: نصف العرض لكل واحد */
+.btn-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-pair .btn { width: 100%; padding-inline: 12px; }
+/* نصف/نصف على الجوال، وبعرض المحتوى على الشاشات الأكبر */
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-row .btn { width: 100%; padding-inline: 12px; }
+@media (min-width: 768px) { .btn-row { display: flex; gap: 12px; } .btn-row .btn { width: auto; padding-inline: 32px; } }
+
+/* أيقونة بلا إطار — مساحة لمس 44px */
+.icon-btn { display: inline-grid; place-items: center; width: var(--tap); height: var(--tap); color: #fff; border-radius: 10px; }
+.icon-btn:hover { background: rgba(255, 255, 255, .1); }
+
+/* ---------- حقول بلا إطار: خط سفلي فقط ---------- */
+.field {
+  width: 100%; background: transparent; border: 0; border-bottom: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 0; padding: 12px 0; min-height: var(--btn-h); color: #fff; font-size: 16px;
+  transition: border-color .15s ease;
+}
+.field::placeholder { color: var(--color-faint); }
+.field:focus { outline: none; border-bottom-color: var(--color-accent); }
+
+/* ---------- أسطح مسطّحة (للصفحات الإدارية فقط) ---------- */
+.card { background: var(--color-surface); border-radius: 14px; }
+.card-hover { transition: background-color .2s ease; }
+.card-hover:hover { background: var(--color-surface-2); }
+
+/* ---------- صفوف أفقية ---------- */
+.rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; scroll-padding-inline: var(--gutter); }
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; flex: 0 0 auto; }
+@media (min-width: 768px) { .rail { gap: 16px; } }
+
+/* ---------- مساعدات ---------- */
+.glass { background: rgba(11, 12, 15, .82); -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%); }
+.brand-gradient { background: var(--color-accent); }   /* توافق مع الصفحات القديمة: لون واحد بلا تدرّج */
+.brand-text { color: #fff; }
+.hairline { border-color: var(--color-line); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+.fade-in { animation: fadeIn .4s ease both; }
+.fade-up { animation: fadeUp .7s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.shimmer { background: linear-gradient(90deg, #16171d 25%, #1d1e25 37%, #16171d 63%); background-size: 400% 100%; animation: shimmer 1.4s ease infinite; }
+@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+.live-dot { animation: pulseDot 1.8s ease-in-out infinite; }
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--color-ink); }
+::-webkit-scrollbar-thumb { background: #2a2b33; border-radius: 8px; border: 2px solid var(--color-ink); }
+
+}
