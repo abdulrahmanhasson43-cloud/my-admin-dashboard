@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#1b1f45"/><stop offset="1" stop-color="#2f3a8f"/></linearGradient>
+<pattern id="d" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="17" cy="17" r="1.1" fill="#fff" fill-opacity="0.10"/></pattern>
+<radialGradient id="v" cx="0.7" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#g)"/>
+<rect width="1600" height="900" fill="url(#d)"/>
+<g transform="translate(1120.0000 450.0000) scale(414.0000)">
+<circle cx="-0.3800" cy="0.0000" r="0.5" fill="none" stroke="#eef0ff" stroke-opacity="0.95" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-1.0000 0.0000 L0.9800 0.0000" fill="none" stroke="#eef0ff" stroke-opacity="0.6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.3800 0.6200 L-0.3800 -0.6200" fill="none" stroke="#eef0ff" stroke-opacity="0.6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.3800 0.0000 L0.0140 0.0000 L0.0140 -0.3078 Z" fill="#a5b4fc" fill-opacity="0.2" stroke="none"/>
+<path d="M-0.3800 0.0000 L0.0140 -0.3078" fill="none" stroke="#a5b4fc" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.0140 -0.3078 L0.0140 0.0000" fill="none" stroke="#eef0ff" stroke-opacity="0.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.3800 0.0000 L0.0140 0.0000" fill="none" stroke="#eef0ff" stroke-opacity="0.6" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.2400 0.0000 A0.14 0.14 0 0 0 -0.2697 -0.0862" fill="none" stroke="#eef0ff" stroke-opacity="0.9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<circle cx="0.0140" cy="-0.3078" r="0.032" fill="#a5b4fc" fill-opacity="1" stroke="none"/>
+<path d="M0.3000 0.0000 L0.3073 -0.0264 L0.3147 -0.0527 L0.3220 -0.0789 L0.3293 -0.1048 L0.3367 -0.1305 L0.3440 -0.1558 L0.3513 -0.1806 L0.3587 -0.2050 L0.3660 -0.2288 L0.3733 -0.2519 L0.3807 -0.2743 L0.3880 -0.2960 L0.3953 -0.3169 L0.4027 -0.3368 L0.4100 -0.3559 L0.4173 -0.3739 L0.4247 -0.3909 L0.4320 -0.4068 L0.4393 -0.4216 L0.4467 -0.4352 L0.4540 -0.4476 L0.4613 -0.4587 L0.4687 -0.4686 L0.4760 -0.4771 L0.4833 -0.4844 L0.4907 -0.4902 L0.4980 -0.4947 L0.5053 -0.4979 L0.5127 -0.4996 L0.5200 -0.5000 L0.5273 -0.4989 L0.5347 -0.4965 L0.5420 -0.4927 L0.5493 -0.4875 L0.5567 -0.4809 L0.5640 -0.4730 L0.5713 -0.4638 L0.5787 -0.4533 L0.5860 -0.4415 L0.5933 -0.4285 L0.6007 -0.4144 L0.6080 -0.3990 L0.6153 -0.3825 L0.6227 -0.3650 L0.6300 -0.3465 L0.6373 -0.3270 L0.6447 -0.3066 L0.6520 -0.2853 L0.6593 -0.2632 L0.6667 -0.2404 L0.6740 -0.2169 L0.6813 -0.1929 L0.6887 -0.1682 L0.6960 -0.1432 L0.7033 -0.1177 L0.7107 -0.0919 L0.7180 -0.0658 L0.7253 -0.0396 L0.7327 -0.0132 L0.7400 0.0132 L0.7473 0.0396 L0.7547 0.0658 L0.7620 0.0919 L0.7693 0.1177 L0.7767 0.1432 L0.7840 0.1683 L0.7913 0.1929 L0.7987 0.2169 L0.8060 0.2404 L0.8133 0.2632 L0.8207 0.2853 L0.8280 0.3066 L0.8353 0.3270 L0.8427 0.3465 L0.8500 0.3650 L0.8573 0.3826 L0.8647 0.3990 L0.8720 0.4144 L0.8793 0.4285 L0.8867 0.4415 L0.8940 0.4533 L0.9013 0.4638 L0.9087 0.4730 L0.9160 0.4809 L0.9233 0.4875 L0.9307 0.4927 L0.9380 0.4965 L0.9453 0.4989 L0.9527 0.5000 L0.9600 0.4996" fill="none" stroke="#eef0ff" stroke-opacity="0.85" stroke-width="2.0" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.0140 -0.3078 L0.3000 -0.3078" fill="none" stroke="#eef0ff" stroke-opacity="0.5" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="3 5"/>
+</g>
+<rect width="1600" height="900" fill="url(#v)"/>
+</svg>

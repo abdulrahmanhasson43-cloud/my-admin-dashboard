@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#1c1c1c"/><stop offset="1" stop-color="#3d3d46"/></linearGradient>
+<pattern id="d" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="17" cy="17" r="1.1" fill="#fff" fill-opacity="0.10"/></pattern>
+<radialGradient id="v" cx="0.7" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#g)"/>
+<rect width="1600" height="900" fill="url(#d)"/>
+<g transform="translate(1120.0000 450.0000) scale(414.0000)">
+<path d="M-0.9500 0.0000 L0.9500 0.0000" fill="none" stroke="#f5f5f7" stroke-opacity="0.6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.0000 0.9500 L0.0000 -0.9500" fill="none" stroke="#f5f5f7" stroke-opacity="0.6" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<g transform="rotate(-24)">
+<ellipse cx="0.08" cy="-0.02" rx="0.7" ry="0.38" fill="none" stroke="#fcd34d" stroke-opacity="0.9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+</g>
+<path d="M-0.8500 0.7000 L0.8500 -0.6600" fill="none" stroke="#f5f5f7" stroke-opacity="0.95" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.7000 -0.6200 L0.8000 0.5200" fill="none" stroke="#f5f5f7" stroke-opacity="0.5" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="5 5"/>
+<circle cx="0.3400" cy="-0.3000" r="0.03" fill="#f5f5f7" fill-opacity="1" stroke="none"/>
+<circle cx="-0.4200" cy="0.2700" r="0.03" fill="#f5f5f7" fill-opacity="1" stroke="none"/>
+<circle cx="0.0000" cy="0.0000" r="0.03" fill="#f5f5f7" fill-opacity="1" stroke="none"/>
+<circle cx="0.3400" cy="-0.3000" r="0.06" fill="none" stroke="#fcd34d" stroke-opacity="0.9" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.8000 -0.0200 L-0.8000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 -0.8000 L0.0200 -0.8000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.6000 -0.0200 L-0.6000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 -0.6000 L0.0200 -0.6000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.4000 -0.0200 L-0.4000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 -0.4000 L0.0200 -0.4000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.2000 -0.0200 L-0.2000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 -0.2000 L0.0200 -0.2000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.2000 -0.0200 L0.2000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 0.2000 L0.0200 0.2000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.4000 -0.0200 L0.4000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 0.4000 L0.0200 0.4000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.6000 -0.0200 L0.6000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 0.6000 L0.0200 0.6000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.8000 -0.0200 L0.8000 0.0200" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.0200 0.8000 L0.0200 0.8000" fill="none" stroke="#f5f5f7" stroke-opacity="0.4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+</g>
+<rect width="1600" height="900" fill="url(#v)"/>
+</svg>

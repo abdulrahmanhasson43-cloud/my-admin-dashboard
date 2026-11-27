@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#052b2a"/><stop offset="1" stop-color="#0d5a52"/></linearGradient>
+<pattern id="d" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="17" cy="17" r="1.1" fill="#fff" fill-opacity="0.10"/></pattern>
+<radialGradient id="v" cx="0.7" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#g)"/>
+<rect width="1600" height="900" fill="url(#d)"/>
+<g transform="translate(1120.0000 450.0000) scale(414.0000)">
+<circle cx="0.0000" cy="0.0000" r="0.74" fill="none" stroke="#e6fffa" stroke-opacity="0.95" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.6651 0.3244 L0.6651 0.3244 L0.0000 -0.7400 Z" fill="#5eead4" fill-opacity="0.16" stroke="none"/>
+<path d="M-0.6651 0.3244 L0.6651 0.3244 L0.0000 -0.7400 Z" fill="none" stroke="#5eead4" stroke-opacity="0.9" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M0.0000 0.0000 L-0.6651 0.3244" fill="none" stroke="#e6fffa" stroke-opacity="0.45" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="4 5"/>
+<path d="M0.0000 0.0000 L0.6651 0.3244" fill="none" stroke="#e6fffa" stroke-opacity="0.45" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="4 5"/>
+<path d="M0.0000 0.0000 L0.0000 -0.7400" fill="none" stroke="#e6fffa" stroke-opacity="0.45" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="4 5"/>
+<circle cx="0.0000" cy="0.0000" r="0.02" fill="#e6fffa" fill-opacity="1" stroke="none"/>
+<circle cx="-0.6651" cy="0.3244" r="0.026" fill="#e6fffa" fill-opacity="1" stroke="none"/>
+<circle cx="0.6651" cy="0.3244" r="0.026" fill="#e6fffa" fill-opacity="1" stroke="none"/>
+<circle cx="0.0000" cy="-0.7400" r="0.026" fill="#e6fffa" fill-opacity="1" stroke="none"/>
+<path d="M-0.5051 0.3244 A0.16 0.16 0 0 0 -0.5803 0.1887" fill="none" stroke="#e6fffa" stroke-opacity="0.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.8227 -0.4750 L0.8227 -0.4750 L-0.0000 0.9500 Z" fill="none" stroke="#e6fffa" stroke-opacity="0.3" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.9800 0.0000 L0.9800 0.0000" fill="none" stroke="#e6fffa" stroke-opacity="0.2" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+</g>
+<rect width="1600" height="900" fill="url(#v)"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="g" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#0b2417"/><stop offset="1" stop-color="#17592f"/></linearGradient>
+<pattern id="d" width="34" height="34" patternUnits="userSpaceOnUse"><circle cx="17" cy="17" r="1.1" fill="#fff" fill-opacity="0.10"/></pattern>
+<radialGradient id="v" cx="0.7" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
+</defs>
+<rect width="1600" height="900" fill="url(#g)"/>
+<rect width="1600" height="900" fill="url(#d)"/>
+<g transform="translate(1120.0000 450.0000) scale(414.0000)">
+<path d="M-0.9500 0.5500 L0.9500 0.5500" fill="none" stroke="#eafff1" stroke-opacity="0.8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.8800 0.9000 L-0.8800 -0.8000" fill="none" stroke="#eafff1" stroke-opacity="0.8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.7400" y="-0.3465" width="0.1382" height="0.8965" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.7400" y="-0.3465" width="0.1382" height="0.8965" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.6018" y="-0.2489" width="0.1382" height="0.7989" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.6018" y="-0.2489" width="0.1382" height="0.7989" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.4636" y="-0.1133" width="0.1382" height="0.6633" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.4636" y="-0.1133" width="0.1382" height="0.6633" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.3255" y="0.0456" width="0.1382" height="0.5044" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.3255" y="0.0456" width="0.1382" height="0.5044" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.1873" y="0.2104" width="0.1382" height="0.3396" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.1873" y="0.2104" width="0.1382" height="0.3396" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="-0.0491" y="0.3631" width="0.1382" height="0.1869" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="-0.0491" y="0.3631" width="0.1382" height="0.1869" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="0.0891" y="0.4872" width="0.1382" height="0.0628" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="0.0891" y="0.4872" width="0.1382" height="0.0628" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="0.2273" y="0.5691" width="0.1382" height="-0.0191" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="0.2273" y="0.5691" width="0.1382" height="-0.0191" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="0.3655" y="0.5999" width="0.1382" height="-0.0499" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="0.3655" y="0.5999" width="0.1382" height="-0.0499" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="0.5036" y="0.5762" width="0.1382" height="-0.0262" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="0.5036" y="0.5762" width="0.1382" height="-0.0262" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<rect x="0.6418" y="0.5006" width="0.1382" height="0.0494" fill="#86efac" fill-opacity="0.2" stroke="none"/>
+<rect x="0.6418" y="0.5006" width="0.1382" height="0.0494" fill="none" stroke="#86efac" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.8000 -0.3742 L-0.7790 -0.3656 L-0.7580 -0.3558 L-0.7370 -0.3449 L-0.7160 -0.3328 L-0.6950 -0.3197 L-0.6740 -0.3054 L-0.6530 -0.2902 L-0.6320 -0.2739 L-0.6110 -0.2567 L-0.5900 -0.2386 L-0.5690 -0.2197 L-0.5480 -0.1999 L-0.5270 -0.1793 L-0.5060 -0.1581 L-0.4850 -0.1362 L-0.4640 -0.1137 L-0.4430 -0.0906 L-0.4220 -0.0671 L-0.4010 -0.0432 L-0.3800 -0.0189 L-0.3590 0.0058 L-0.3380 0.0306 L-0.3170 0.0557 L-0.2960 0.0808 L-0.2750 0.1060 L-0.2540 0.1312 L-0.2330 0.1563 L-0.2120 0.1812 L-0.1910 0.2060 L-0.1700 0.2305 L-0.1490 0.2546 L-0.1280 0.2784 L-0.1070 0.3017 L-0.0860 0.3245 L-0.0650 0.3467 L-0.0440 0.3683 L-0.0230 0.3892 L-0.0020 0.4094 L0.0190 0.4288 L0.0400 0.4473 L0.0610 0.4650 L0.0820 0.4818 L0.1030 0.4976 L0.1240 0.5123 L0.1450 0.5261 L0.1660 0.5387 L0.1870 0.5502 L0.2080 0.5606 L0.2290 0.5698 L0.2500 0.5778 L0.2710 0.5847 L0.2920 0.5902 L0.3130 0.5946 L0.3340 0.5976 L0.3550 0.5995 L0.3760 0.6000 L0.3970 0.5993 L0.4180 0.5973 L0.4390 0.5940 L0.4600 0.5895 L0.4810 0.5838 L0.5020 0.5768 L0.5230 0.5686 L0.5440 0.5592 L0.5650 0.5486 L0.5860 0.5370 L0.6070 0.5242 L0.6280 0.5103 L0.6490 0.4954 L0.6700 0.4794 L0.6910 0.4626 L0.7120 0.4447 L0.7330 0.4261 L0.7540 0.4066 L0.7750 0.3863 L0.7960 0.3653 L0.8170 0.3436 L0.8380 0.3213 L0.8590 0.2984 L0.8800 0.2750" fill="none" stroke="#eafff1" stroke-opacity="0.9" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+<path d="M-0.2300 0.2687 L0.4700 0.7505" fill="none" stroke="#eafff1" stroke-opacity="0.7" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke" stroke-dasharray="5 5"/>
+<circle cx="0.1200" cy="0.5096" r="0.03" fill="#eafff1" fill-opacity="1" stroke="none"/>
+</g>
+<rect width="1600" height="900" fill="url(#v)"/>
+</svg>
